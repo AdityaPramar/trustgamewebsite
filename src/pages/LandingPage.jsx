@@ -193,33 +193,6 @@ export default function LandingPage() {
     >
       東京大学 天野・中井・中山研究室 
     </a>
-
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: "8px",
-      }}
-    >
-      <span
-        style={{
-          fontWeight: "600",
-          color: "#000",
-        }}
-      >
-        Contact:
-      </span>
-
-      <a
-        href="mailto:adityapramar@g.ecc.u-tokyo.ac.jp"
-        style={{
-          color: "#555",
-          textDecoration: "none",
-        }}
-      >
-        adityapramar@g.ecc.u-tokyo.ac.jp
-      </a>
-    </div>
   </div>
 </footer>
     </div>
