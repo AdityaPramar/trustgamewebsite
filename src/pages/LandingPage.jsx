@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import imagehome from '../assets/imagehome.png';
 {/*import Navbar from "../components/Navbar";*/}
 const VALID_CODES = ["RM10402", "RM20402", "RM30402"];
 const SLIDES_URL =
@@ -80,7 +81,7 @@ export default function LandingPage() {
           }}
         >
           <img
-            src="./src/assets/imagehome.png"
+            src={imagehome}
             alt="Trust Game"
             style={{
               width: "100%",
