@@ -1,0 +1,1726 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>繰り返し信頼ゲーム課題</title>
+
+  <!-- jsPsych v7 -->
+  <link href="https://unpkg.com/jspsych@7.3.4/css/jspsych.css" rel="stylesheet" />
+
+  <style>
+    html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+#jspsych-target {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+    .jspsych-content,
+    .jspsych-content * {
+      line-height: 1.5;
+    }
+
+    .jspsych-content p {
+      margin: 0 0 0.9em 0;
+    }
+
+
+    .jspsych-content h2,
+    .jspsych-content h3 {
+      margin: 0 0 0.6em 0;
+    }
+
+    .jspsych-content {
+      max-width: 900px;
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    .big {
+      font-size: 28px;
+    }
+
+    .mid {
+      font-size: 22px;
+    }
+
+    .small {
+      font-size: 16px;
+      color: #444;
+    }
+
+    .spacer {
+      height: 18px;
+    }
+
+    .slider-wrap {
+      margin-top: 18px;
+    }
+
+    .amount-preview {
+      font-size: 28px;
+      font-weight: 700;
+      margin-top: 10px;
+    }
+
+    /* 質問項目 */
+    .qwrap {
+      margin: 10px 0 18px;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+    }
+
+    .qtitle {
+      margin-bottom: 8px;
+      font-size: 18px;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin-top: 6px;
+    }
+
+    .btn-group button {
+      width: 44px;
+      height: 44px;
+      font-size: 18px;
+      border: 2px solid #aaa;
+      border-radius: 8px;
+      background: #fff;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+
+    .btn-group button.selected {
+      background: #4a90d9;
+      color: #fff;
+      border-color: #4a90d9;
+    }
+
+    .btn-group button:hover {
+      border-color: #666;
+    }
+
+    .scale-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: #666;
+      margin-top: 4px;
+    }
+
+    /* スライダー質問 */
+    .range-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .range-row span {
+      width: 80px;
+      text-align: center;
+      color: #333;
+      font-size: 14px;
+    }
+
+    input[type="range"] {
+      width: 100%;
+    }
+
+    /* 投資スライダー：未操作時はつまみを隠す */
+    input[type="range"].slider-hidden-thumb::-webkit-slider-thumb {
+      opacity: 0;
+    }
+
+    input[type="range"].slider-hidden-thumb::-moz-range-thumb {
+      opacity: 0;
+    }
+
+    /* スピナー */
+    .spinner {
+      width: 60px;
+      height: 60px;
+      border: 6px solid #ddd;
+      border-top: 6px solid #555;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 24px auto 0;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+    }
+
+    #jspsych-target {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ===== ゲームボード ===== */
+    .game-board {
+      width: 600px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .gb-opponent,
+    .gb-player {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 8px 12px;
+      justify-content: flex-start;
+    }
+
+    .gb-avatar {
+      font-size: 48px;
+      line-height: 1;
+    }
+
+    .gb-name {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .gb-total {
+      font-size: 14px;
+      color: #555;
+    }
+
+    .gb-score-right {
+      position: absolute;
+      right: 0;
+      top: 8px;
+      text-align: right;
+      font-size: 13px;
+      color: #666;
+    }
+
+    .gb-score-left {
+      position: absolute;
+      right: 0;
+      bottom: 8px;
+      text-align: right;
+      font-size: 13px;
+      color: #666;
+    }
+
+    .gb-mid {
+      text-align: center;
+      margin: 12px 0;
+      font-size: 15px;
+      color: #444;
+      border-top: 1px dashed #ccc;
+      border-bottom: 1px dashed #ccc;
+      padding: 6px 0;
+    }
+
+    /* ゲージバー */
+    .bar-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 16px;
+    }
+
+    .bar-label {
+      font-size: 13px;
+      color: #666;
+      width: 70px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .bar-track {
+      flex: 1;
+      height: 28px;
+      background: #e8e8e8;
+      border-radius: 14px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 14px;
+      transition: width 0.6s ease;
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      font-size: 13px;
+      font-weight: 700;
+      box-sizing: border-box;
+      min-width: 0;
+    }
+
+    .bar-fill.gold {
+      background: linear-gradient(90deg, #ffd700, #f0a500);
+      color: #6b4f00;
+      justify-content: flex-end;
+    }
+
+    .bar-fill.sent {
+      background: linear-gradient(90deg, #ccc, #aaa);
+      color: #555;
+      justify-content: flex-end;
+    }
+
+    .bar-fill.green {
+      background: linear-gradient(90deg, #66dd88, #2ecc71);
+      color: #145a32;
+      justify-content: flex-end;
+    }
+
+    .bar-fill.red {
+      background: linear-gradient(90deg, #ff8888, #e74c3c);
+      color: #5a0000;
+      justify-content: flex-end;
+    }
+
+    /* バーアニメ */
+    @keyframes barGrow {
+      0% {
+        max-width: 0
+      }
+
+      100% {
+        max-width: 100%
+      }
+    }
+
+    @keyframes barPulse {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: 0.6
+      }
+    }
+
+    .bar-fill.grow {
+      animation: barGrow 0.8s ease-out forwards;
+    }
+
+    .bar-fill.pulse {
+      animation: barPulse 1s ease-in-out infinite;
+    }
+
+    /* 思考中バブル */
+    @keyframes float {
+
+      0%,
+      100% {
+        transform: translateY(0)
+      }
+
+      50% {
+        transform: translateY(-8px)
+      }
+    }
+
+    .thinking-bubble {
+      display: inline-block;
+      background: #f0f0f0;
+      border-radius: 16px;
+      padding: 6px 16px;
+      font-size: 15px;
+      color: #666;
+      animation: float 1.5s ease-in-out infinite;
+    }
+
+    /* アイコン選択 */
+    .icon-choices {
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      margin: 18px 0;
+    }
+
+    .icon-choice {
+      cursor: pointer;
+      text-align: center;
+      padding: 12px 18px;
+      border: 3px solid transparent;
+      border-radius: 16px;
+      transition: 0.2s;
+    }
+
+    .icon-choice:hover {
+      border-color: #aaa;
+      background: #f8f8f8;
+    }
+
+    .icon-choice.selected {
+      border-color: #4a90d9;
+      background: #e8f0fe;
+    }
+
+    .icon-choice .ic-emoji {
+      font-size: 56px;
+    }
+
+    .icon-choice .ic-label {
+      font-size: 14px;
+      margin-top: 4px;
+    }
+
+    /* デバッグ用パラメータ表示 */
+    #debug-info {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      z-index: 99999;
+      background: rgba(0, 0, 0, 0.85);
+      color: #0f0;
+      font-family: monospace;
+      font-size: 12px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      line-height: 1.6;
+      max-width: 320px;
+      display: none;
+    }
+
+    #debug-info .label {
+      color: #aaa;
+    }
+
+    /* デバッグ用スキップボタン */
+    #debug-skip-btn {
+      position: fixed;
+      bottom: 16px;
+      right: 16px;
+      z-index: 99999;
+      padding: 10px 18px;
+      font-size: 14px;
+      font-weight: bold;
+      background: #e74c3c;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    #debug-skip-btn:hover {
+      background: #c0392b;
+    }
+  </style>
+
+  <script src="https://unpkg.com/jspsych@7.3.4"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-html-button-response@1.1.3"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-instructions@1.1.3"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-survey-text@1.1.3"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-html-slider-response@1.1.3"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@1.1.3"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-call-function@1.1.3"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pixi.js@6.5.8/dist/browser/pixi.min.js"></script>
+  <script src="https://www.hes.kyushu-u.ac.jp/~kurokid/jspsychophysics/jspsych-psychophysics.js"></script>
+</head>
+
+<body>
+
+  <!-- ===== Experiment Area ===== -->
+  <div id="jspsych-target"></div>
+
+  <!-- ===== Debug UI ===== -->
+  <div id="debug-info"></div>
+
+
+</body>
+<script type="module">
+
+  import { initializeApp }
+    from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+
+  import {
+    getFirestore,
+    collection,
+    addDoc
+  }
+    from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+
+    apiKey: "AIzaSyAEJYP_oi7rvCpOXOkjEqv5BbEhwo5PoGU",
+    authDomain: "trustgame-bfd71.firebaseapp.com",
+    projectId: "trustgame-bfd71",
+    storageBucket: "trustgame-bfd71.firebasestorage.app",
+    messagingSenderId: "852392901778",
+    appId: "1:852392901778:web:5b8f3fb9d0ce6c046cba4b",
+    measurementId: "G-VHC1RS8CE8"
+
+  };
+
+  const app = initializeApp(firebaseConfig);
+
+  const db = getFirestore(app);
+
+  // expose globally
+
+  window.firebaseDB = db;
+  window.firebaseCollection = collection;
+  window.firebaseAddDoc = addDoc;
+
+  console.log("Firebase loaded");
+
+</script>
+
+
+<script>
+  const PARTICIPANT_ID = crypto.randomUUID();
+  const urlParams = new URLSearchParams(window.location.search);
+  const ROOM_CODE = urlParams.get("roomCode") ?? null;
+  "use strict";
+
+  /* =========================================================
+     パラメータ定数（pilotで調整しやすいよう分離）
+  ========================================================= */
+  const PARAMS = {
+    lambda: 0.30,        // EMA減衰率
+    theta: 0.25,         // 評判ストック閾値
+    kappa: 0.20,         // 評判感度（全相手共通）
+    mu_high: 0.343,      // 高ベース返報率
+    mu_low: 0.323,       // 低ベース返報率
+    sigma_eta: 0.01,     // 返報率ノイズSD（毎試行）
+    sigma_delta: 0.02,   // 相手ごとオフセットSD
+    r_min: 0.25,         // 返報率下限
+    r_max: 0.55,         // 返報率上限
+    multiplier: 3,       // 投資倍率（投資額が相手に渡るとき3倍）
+    endowment: 100,      // 毎ラウンドの持ち点
+    invest_step: 1,      // 投資額刻み（1円単位）
+    invest_min: 30,      // 最低投資額
+    invest_max: 100,     // 投資額上限
+    invest_timeout: null,  // 投資画面タイムアウト(ms) ※nullで無制限
+    return_display_ms: 4000, // 返報表示時間(ms)
+    short_rounds_min: 4,
+    short_rounds_max: 5,
+    long_rounds_min: 10,
+    long_rounds_max: 12,
+    donation_max: 1000,
+    donation_step: 10,
+  };
+
+  /* =========================================================
+     ユーティリティ関数
+  ========================================================= */
+  function sanitize(obj) {
+  return Object.fromEntries(
+    Object.entries(obj).map(([k, v]) => [k, v === undefined ? null : v])
+  );
+}
+
+  function randInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+  const clamp = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
+  const roundTo5 = (x) => Math.round(x / 5) * 5; // 寄付課題等で使用
+
+  // Box-Muller法 正規分布 N(0,1)
+  function randn() {
+    let u = 0, v = 0;
+    while (u === 0) u = Math.random();
+    while (v === 0) v = Math.random();
+    return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+  }
+
+  // 配列シャッフル（Fisher-Yates）
+  function shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  // インストラクションページ生成
+  function instructionPage(html) {
+    return {
+      type: jsPsychHtmlButtonResponse,
+      stimulus: `<div class="mid">${html}</div>`,
+      choices: ["次へ"]
+    };
+  }
+
+  /* =========================================================
+     アバター・ゲーム状態
+  ========================================================= */
+  const PLAYER_ICONS = [
+    { emoji: "🐱", label: "ネコ" },
+    { emoji: "🐶", label: "イヌ" },
+    { emoji: "🐰", label: "ウサギ" },
+  ];
+  const OPPONENT_ICONS = [
+    { emoji: "🦊", label: "キツネ" },
+    { emoji: "🐼", label: "パンダ" },
+    { emoji: "🦁", label: "ライオン" },
+    { emoji: "🐸", label: "カエル" },
+    { emoji: "🦉", label: "フクロウ" },
+    { emoji: "🐧", label: "ペンギン" },
+    { emoji: "🐻", label: "クマ" },
+    { emoji: "🐯", label: "トラ" },
+  ];
+  const OPPONENT_NAMES = ["dai_k", "m99", "taku3", "ryo_s", "hina02", "sora", "kei_77", "yuu_t", "nao5", "ren_x"];
+
+  const GAME = {
+    playerName: "",
+    playerIcon: "",
+    playerTotal: 0,
+    opponentTotal: 0,
+  };
+
+  // ゲームボードHTML生成
+  function makeGameBoardHtml(opts) {
+    const { roundNum, oppIcon, oppName, content, oppBarsHtml, playerBarsHtml } = opts;
+    return `
+    <div class="game-board">
+      <div class="gb-opponent">
+        <div class="gb-avatar">${oppIcon}</div>
+        <div><div class="gb-name">${oppName}</div><div class="gb-total">合計: <span id="opp-total">${GAME.opponentTotal}</span>円</div></div>
+      </div>
+      <div id="opp-bars">${oppBarsHtml || ""}</div>
+      <div class="gb-mid">ラウンド：${roundNum}回目</div>
+      <div id="my-bars">${playerBarsHtml || ""}</div>
+      <div class="gb-player">
+        <div class="gb-avatar">${GAME.playerIcon}</div>
+        <div><div class="gb-name">${GAME.playerName}</div><div class="gb-total">合計: <span id="my-total">${GAME.playerTotal}</span>円</div></div>
+      </div>
+      ${content || ""}
+    </div>`;
+  }
+
+  // ゲージバーHTML生成（100円=1段、超過分は段を増やす）
+  function makeBar(label, yen, barUnit, cssClass, extraBarClass) {
+    const barCls = extraBarClass ? `bar-fill ${cssClass} ${extraBarClass}` : `bar-fill ${cssClass}`;
+    if (yen <= 0) {
+      return `<div class="bar-row">
+      <div class="bar-label">${label}</div>
+      <div class="bar-track"><div class="${barCls}" style="width:0%"></div></div>
+    </div>`;
+    }
+    let remaining = yen;
+    const rows = [];
+    const numRows = Math.ceil(yen / barUnit);
+    for (let i = 0; i < numRows; i++) {
+      const seg = Math.min(remaining, barUnit);
+      remaining -= seg;
+      const pct = (seg / barUnit) * 100;
+      const showLabel = i === 0 ? label : "";
+      const text = (i === numRows - 1) ? `${yen}円` : "";
+      rows.push(`<div class="bar-row">
+      <div class="bar-label">${showLabel}</div>
+      <div class="bar-track"><div class="${barCls}" style="width:${pct}%">${text}</div></div>
+    </div>`);
+    }
+    return rows.join("");
+  }
+
+  // ISI（注視点）
+  function makeFixationISI(dataObj) {
+    return {
+      type: jsPsychHtmlKeyboardResponse,
+      stimulus: '<div style="font-size:40px;">+</div>',
+      choices: "NO_KEYS",
+      trial_duration: randInt(1500, 3000),
+      data: Object.assign({ trial_kind: "isi" }, dataObj)
+    };
+  }
+
+  /* =========================================================
+     投資額配列
+  ========================================================= */
+  const AMOUNTS = Array.from(
+    { length: (PARAMS.invest_max - PARAMS.invest_min) / PARAMS.invest_step + 1 },
+    (_, i) => PARAMS.invest_min + i * PARAMS.invest_step
+  ); // [30, 31, 32, ..., 100]
+
+  /* =========================================================
+     実験デザイン生成
+  ========================================================= */
+  function generateDesign() {
+    // 4条件 = Short/Long × μ_low/μ_high, 各2相手 = 8ブロック
+    const conditions = [
+      { duration: "short", mu_type: "low" },
+      { duration: "short", mu_type: "high" },
+      { duration: "long", mu_type: "low" },
+      { duration: "long", mu_type: "high" },
+    ];
+
+    const blocks = [];
+    conditions.forEach(c => {
+      // 各相手に小さな個人差 δ_j を付与
+      const d1 = randn() * PARAMS.sigma_delta;
+      const d2 = randn() * PARAMS.sigma_delta;
+      blocks.push({ ...c, partnerIndex: 1, delta_j: d1 });
+      blocks.push({ ...c, partnerIndex: 2, delta_j: d2 });
+    });
+    return shuffle(blocks);
+  }
+
+  // 相手IDラベル生成
+  function generatePartnerIds(n) {
+    const ids = [];
+    for (let i = 0; i < n; i++) {
+      ids.push(`P${String(i + 1).padStart(2, "0")}`);
+    }
+    return shuffle(ids);
+  }
+
+  /* =========================================================
+     返報生成ロジック
+  ========================================================= */
+  function computeReturn(g, s_prev, mu, delta_j) {
+    // 返報率: r_t = clip(μ_type + δ_j + κ·s_t + η_t, r_min, r_max)
+    // ※ s_t はラグ付き（今回の投資はまだ反映されていない）
+    const eta = randn() * PARAMS.sigma_eta;
+    const r = clamp(mu + delta_j + PARAMS.kappa * s_prev + eta, PARAMS.r_min, PARAMS.r_max);
+
+    // 返報額 = round(multiplier * g * r)
+    const received = PARAMS.multiplier * g;
+    const y = clamp(Math.round(received * r), 0, received);
+
+    // 評判ストック更新（次試行から効く）: s_{t+1} = (1-λ)s_t + λ(g_t/100 - θ)
+    const s_next = (1 - PARAMS.lambda) * s_prev + PARAMS.lambda * (g / 100 - PARAMS.theta);
+
+    return { s_next, r, eta, y };
+  }
+
+  /* =========================================================
+     jsPsych初期化
+  ========================================================= */
+  let jsPsych;
+
+  /* =========================================================
+     デバッグ用ツール
+  ========================================================= */
+  const debugInfoEl = document.getElementById("debug-info");
+  let debugInfoVisible = false;
+
+  // デバッグ情報更新関数
+  function updateDebugInfo(info) {
+    if (!debugInfoVisible) return;
+    const lines = Object.entries(info).map(
+      ([k, v]) => `<span class="label">${k}:</span> ${v}`
+    );
+    debugInfoEl.innerHTML = lines.join("<br>");
+  }
+
+  /* =========================================================
+     タイムライン構築
+  ========================================================= */
+  const timeline = [];
+
+  /* =========================================================
+     ハンドルネーム・アイコン選択
+  ========================================================= */
+  // 名前入力
+  timeline.push({
+    type: jsPsychSurveyText,
+    questions: [{ prompt: "ゲームで使用するハンドルネームを入力してください", name: "handle", required: true }],
+    data: { phase: "setup", trial_kind: "handle_name" },
+    on_finish: (data) => { GAME.playerName = data.response.handle; }
+  });
+
+  // アイコン選択
+  timeline.push({
+    type: jsPsychHtmlButtonResponse,
+    stimulus: `
+    <div class="center">
+      <h2>アイコンを選んでください</h2>
+      <div class="icon-choices">
+        ${PLAYER_ICONS.map((ic, i) => `
+          <div class="icon-choice" data-idx="${i}" onclick="
+            document.querySelectorAll('.icon-choice').forEach(e=>e.classList.remove('selected'));
+            this.classList.add('selected');
+            window.__selectedIcon=${i};
+          ">
+            <div class="ic-emoji">${ic.emoji}</div>
+            <div class="ic-label">${ic.label}</div>
+          </div>
+        `).join("")}
+      </div>
+    </div>`,
+    choices: ["決定"],
+    data: { phase: "setup", trial_kind: "icon_select" },
+    on_load: () => { window.__selectedIcon = 0; },
+    on_finish: (data) => {
+      const idx = window.__selectedIcon || 0;
+      GAME.playerIcon = PLAYER_ICONS[idx].emoji;
+      data.player_icon = PLAYER_ICONS[idx].label;
+    }
+  });
+
+  /* =========================================================
+     インストラクション—ネストタイムライン
+  ========================================================= */
+  timeline.push({
+    timeline: [
+      instructionPage(`
+    <p>この課題では、あなたと相手の間で「投資」と「返報」のやり取りを行います。
+    ブロックが変わると、相手は別の相手になります。</p>
+    <p>相手とのやり取り回数は2種類あります：</p>
+    <ul style="text-align:left; display:inline-block;">
+      <li>短期：4〜5回</li>
+      <li>長期：10〜12回</li>
+    </ul>
+    <p>どちらの相手かはブロック冒頭で表示されます。</p>
+  `),
+      instructionPage(`
+    <p>毎ラウンド、あなたは総額100円を持ちます。</p>
+    <p><strong>【投資（あなた → 相手）】</strong><br>
+    相手に投資する額をスライダーで選び、［確定］を押してください。<br>
+    あなたの手元には 100 − 投資額 が残ります。</p>
+    <p><strong>投資した額は、相手に渡るときに3倍になります。</strong></p>
+    <p><strong>【返報（相手 → あなた）】</strong><br>
+    相手があなたに返す額が画面に表示されます。<br>
+    （相手からの返報を拒否することはできません）</p>
+    <p>課題の途中で、相手の印象や今後の予想について質問が表示されます。
+    あまり深く考えすぎず、<strong>その時その瞬間の直感</strong>で回答してください。</p>
+  `),
+      instructionPage(`
+    <p><strong>【重要：追加報酬について】</strong></p>
+    <p>課題終了後に、コンピュータが各相手（計8ブロック）とのやり取りの中から、
+    それぞれ2試行ずつをランダムに抽選します。
+    その8試行分の平均に基づき追加報酬が支払われます。</p>
+    <p>追加謝礼（ボーナス）の上限は2000円です。</p>
+    <p>ブロック内の「どの回のやり取り」が選ばれるかは、課題が終わるまで分かりません。
+    そのため、すべての試行を「実際に支払われる可能性がある」と考えて取り組んでください。</p>
+  `),
+      instructionPage(`
+    <p><strong>【準備はよろしいですか？】</strong></p>
+    <p>これより課題を開始します。</p>
+    <ul style="text-align:left; display:inline-block;">
+      <li>投資額の決定（0〜100円）</li>
+      <li>相手からのお返し</li>
+      <li>印象の回答</li>
+    </ul>
+    <p>このサイクルを繰り返します。それでは、最初の相手とのやり取りを開始してください。</p>
+    <p><strong>「開始ボタン」を押してスタートしてください。</strong></p>
+  `),
+    ]
+  });
+  const PRACTICE_ROUNDS = 3;
+  const PRACTICE_ICON = "💻";
+  const PRACTICE_NAME = "Computer";
+  const practiceTimeline = [];
+
+  for (let round = 1; round <= PRACTICE_ROUNDS; round++) {
+
+    const roundNum = round;
+
+    // 投資
+    practiceTimeline.push({
+      type: jsPsychHtmlSliderResponse,
+      stimulus: () => makeGameBoardHtml({
+        roundNum,
+        oppIcon: PRACTICE_ICON,
+        oppName: PRACTICE_NAME,
+        playerBarsHtml: makeBar(
+          "手持ち",
+          PARAMS.endowment,
+          PARAMS.endowment,
+          "gold",
+          ""
+        ),
+        oppBarsHtml: "",
+        content: `
+        <div class="center" style="margin-top:12px;">
+          <div id="invest-preview" class="amount-preview">
+            投資額：—円 → 相手に渡ると <strong>×${PARAMS.multiplier}</strong>
+          </div>
+          <div id="keep-preview" class="small">
+            手元に残す額：—円
+          </div>
+        </div>`
+      }),
+      min: 0,
+      max: AMOUNTS.length - 1,
+      step: 1,
+      slider_start: Math.floor(AMOUNTS.length / 2),
+      labels: [
+        String(PARAMS.invest_min),
+        "",
+        String(Math.round((PARAMS.invest_min + PARAMS.invest_max) / 2)),
+        "",
+        String(PARAMS.invest_max)
+      ],
+      button_label: "確定",
+      require_movement: true,
+
+      data: {
+        phase: "practice",
+        trial_kind: "practice_invest",
+        round: roundNum
+      },
+
+      on_load: () => {
+
+        const slider = document.querySelector("input[type='range']");
+        const investP = document.getElementById("invest-preview");
+        const keepP = document.getElementById("keep-preview");
+        const barsEl = document.getElementById("my-bars");
+        const oppBarsEl = document.getElementById("opp-bars");
+
+        slider.classList.add("slider-hidden-thumb");
+
+        const reveal = () => {
+
+          slider.classList.remove("slider-hidden-thumb");
+
+          const idx = parseInt(slider.value);
+          const g = AMOUNTS[idx];
+
+          const keep = PARAMS.endowment - g;
+          const oppReceive = g * PARAMS.multiplier;
+
+          investP.innerHTML =
+            `投資額：<strong>${g}円</strong> → 相手に <strong>${oppReceive}円</strong>`;
+
+          keepP.textContent =
+            `手元に残す額：${keep}円`;
+
+          barsEl.innerHTML =
+            makeBar("手持ち", keep, PARAMS.endowment, "gold", "");
+
+          oppBarsEl.innerHTML =
+            makeBar("受取", oppReceive, PARAMS.endowment, "green", "");
+        };
+
+        slider.addEventListener("input", reveal);
+        slider.addEventListener("pointerdown", reveal);
+      },
+
+      on_finish: (data) => {
+
+        const idx = parseInt(data.response);
+
+        const g = AMOUNTS[idx];
+
+        data.investment = g;
+
+        data.return_amount =
+          randInt(50, 100);   // ← practice return
+      }
+    });
+
+    // Thinking screen
+    practiceTimeline.push({
+      type: jsPsychHtmlKeyboardResponse,
+      stimulus: () => {
+
+        const inv =
+          jsPsych.data.get()
+            .filter({
+              phase: "practice",
+              trial_kind: "practice_invest",
+              round: roundNum
+            })
+            .last(1)
+            .values()[0];
+
+        const g = inv.investment;
+
+        return makeGameBoardHtml({
+          roundNum,
+          oppIcon: PRACTICE_ICON,
+          oppName: PRACTICE_NAME,
+          playerBarsHtml: makeBar(
+            "手持ち",
+            PARAMS.endowment - g,
+            PARAMS.endowment,
+            "gold",
+            ""
+          ),
+          oppBarsHtml:
+            makeBar(
+              "受取",
+              g * PARAMS.multiplier,
+              PARAMS.endowment,
+              "green",
+              "grow"
+            ) +
+            `<div style="text-align:center;margin-top:8px;">
+            <span class="thinking-bubble">思考中...</span>
+          </div>`,
+          content: ""
+        });
+      },
+      choices: "NO_KEYS",
+      trial_duration: randInt(0, 0),
+      data: {
+        phase: "practice",
+        trial_kind: "practice_wait",
+        round: roundNum
+      }
+    });
+
+    // Return display
+    practiceTimeline.push({
+      type: jsPsychHtmlButtonResponse,
+
+      stimulus: () => {
+
+        const inv =
+          jsPsych.data.get()
+            .filter({
+              phase: "practice",
+              trial_kind: "practice_invest",
+              round: roundNum
+            })
+            .last(1)
+            .values()[0];
+
+        const g = inv.investment;
+        const y = inv.return_amount;
+
+        return makeGameBoardHtml({
+          roundNum,
+          oppIcon: PRACTICE_ICON,
+          oppName: PRACTICE_NAME,
+
+          oppBarsHtml: "",
+
+          playerBarsHtml:
+            makeBar(
+              "手持ち",
+              PARAMS.endowment - g,
+              PARAMS.endowment,
+              "gold",
+              ""
+            ) +
+            makeBar(
+              "リターン",
+              y,
+              PARAMS.endowment,
+              "green",
+              "grow"
+            ),
+
+          content: `
+          <div class="center mid" style="margin-top:12px;">
+            <p>あなたの投資：<strong>${g}円</strong></p>
+            <p>コンピュータから返ってきた額：
+              <strong>${y}円</strong>
+            </p>
+          </div>`
+        });
+      },
+
+      choices: ["次へ"],
+
+      data: {
+        phase: "practice",
+        trial_kind: "practice_return",
+        round: roundNum
+      }
+    });
+
+    practiceTimeline.push(
+      makeFixationISI({
+        phase: "practice",
+        round: roundNum
+      })
+    );
+  }
+
+
+  /* =========================================================
+     実験デザイン・ブロック生成
+  ========================================================= */
+  const design = generateDesign();
+  timeline.push({
+    type: jsPsychHtmlButtonResponse,
+    stimulus: `
+    <div class="center">
+      <h2>練習ラウンド</h2>
+      <p class="mid">
+        これからコンピュータを相手に練習を行います。
+      </p>
+      <p>
+        このゲームは <strong>3ラウンド</strong> 続きます。
+      </p>
+      <p class="small">
+        練習中のデータは分析には使用されません。
+      </p>
+    </div>
+  `,
+    choices: ["開始"],
+    data: {
+      phase: "practice",
+      trial_kind: "practice_start"
+    }
+  });
+  const partnerIds = generatePartnerIds(design.length);
+
+
+  timeline.push({
+    timeline: practiceTimeline
+  });
+
+  /* =========================================================
+ Practice Block
+========================================================= */
+
+  // 相手アイコンプール（シャッフルして割り当て）
+  const shuffledOppIcons = shuffle(OPPONENT_ICONS);
+  const shuffledOppNames = shuffle(OPPONENT_NAMES);
+
+  // ブロックごとにタイムラインを構築
+  design.forEach((block, blockIdx) => {
+    const partnerId = partnerIds[blockIdx];
+    const oppIcon = shuffledOppIcons[blockIdx % shuffledOppIcons.length].emoji;
+    const oppName = shuffledOppNames[blockIdx % shuffledOppNames.length];
+    const getMu = () => block.mu_type === "high" ? PARAMS.mu_high : PARAMS.mu_low;
+    const delta_j = block.delta_j;
+    const numRounds = block.duration === "short"
+      ? randInt(PARAMS.short_rounds_min, PARAMS.short_rounds_max)
+      : randInt(PARAMS.long_rounds_min, PARAMS.long_rounds_max);
+    const durationLabel = block.duration === "short" ? "短期（4〜5回）" : "長期（10〜12回）";
+    const condLabel = `${block.duration}_${block.mu_type}_${block.partnerIndex}`;
+
+    // 評判ストック（ラグ付き: s_0 = 0）
+    let s = 0;
+
+    // --- フェイクマッチング＋ブロック開始（ネスト） ---
+    timeline.push({
+      timeline: [
+        {
+          type: jsPsychHtmlKeyboardResponse,
+          stimulus: `
+        <div class="center mid">
+          実験相手とマッチングしています。<br>
+          しばらくお待ちください。
+          <div class="spinner"></div>
+          <div class="small" style="margin-top:12px;">通常は15秒前後でマッチングします。</div>
+        </div>`,
+          choices: "NO_KEYS",
+          trial_duration: randInt(5000, 10000),
+          data: { phase: "matching", condition: condLabel, block_index: blockIdx + 1 }
+        },
+        {
+          type: jsPsychHtmlKeyboardResponse,
+          stimulus: `<div class="center mid">マッチングが完了しました。</div>`,
+          choices: "NO_KEYS",
+          trial_duration: 2000,
+          data: { phase: "matching", condition: condLabel, status: "matched" },
+          on_load: () => { GAME.playerTotal = 0; GAME.opponentTotal = 0; }
+        },
+        {
+          type: jsPsychHtmlButtonResponse,
+          stimulus: `
+        <div class="center">
+          <h3>対戦相手が決まりました</h3>
+          <div style="font-size:64px;margin:12px 0;">${oppIcon}</div>
+          <p class="mid"><strong>${oppName}</strong></p>
+          <p>この相手とのやり取り回数：<strong>${durationLabel}</strong></p>
+        </div>`,
+          choices: ["開始"],
+          data: {
+            phase: "trust_game", trial_kind: "block_start",
+            condition: condLabel, block_index: blockIdx + 1,
+            partner_id: partnerId, duration: block.duration,
+            mu_type: block.mu_type, num_rounds: numRounds,
+            delta_j: delta_j
+          },
+          on_load: () => {
+            updateDebugInfo({
+              "ブロック": `${blockIdx + 1}/8`,
+              "条件": condLabel,
+              "相手ID": partnerId,
+              "期間": block.duration,
+              "μ_type": block.mu_type,
+              "μ": getMu(),
+              "δ_j": delta_j.toFixed(4),
+              "κ": PARAMS.kappa,
+              "θ": PARAMS.theta,
+              "倍率": PARAMS.multiplier,
+              "返報率範囲": `[${PARAMS.r_min}, ${PARAMS.r_max}]`,
+              "ラウンド数": numRounds,
+              "評判 s₀": 0,
+            });
+          }
+        },
+      ]
+    });
+
+    // --- 各ラウンド（ネスト：スキップでブロック終了時質問へ飛ぶ） ---
+    const roundsTimeline = [];
+    for (let round = 1; round <= numRounds; round++) {
+      const roundNum = round; // クロージャ用
+
+      // 投資画面（ゲームボードUI）
+      roundsTimeline.push({
+        type: jsPsychHtmlSliderResponse,
+        stimulus: () => makeGameBoardHtml({
+          roundNum, oppIcon, oppName,
+          playerBarsHtml: makeBar("手持ち", PARAMS.endowment, PARAMS.endowment, "gold", ""),
+          oppBarsHtml: "",
+          content: `
+          <div class="center" style="margin-top:12px;">
+            <div id="invest-preview" class="amount-preview">投資額：—円 → 相手に渡ると <strong>×${PARAMS.multiplier}</strong></div>
+            <div id="keep-preview" class="small">手元に残す額：—円</div>
+          </div>`
+        }),
+        min: 0,
+        max: AMOUNTS.length - 1,
+        step: 1,
+        slider_start: Math.floor(AMOUNTS.length / 2),
+        labels: [String(PARAMS.invest_min), "", String(Math.round((PARAMS.invest_min + PARAMS.invest_max) / 2)), "", String(PARAMS.invest_max)],
+        button_label: "確定",
+        require_movement: true,
+        trial_duration: PARAMS.invest_timeout,
+        response_ends_trial: true,
+        data: {
+          phase: "trust_game", trial_kind: "invest",
+          condition: condLabel, block_index: blockIdx + 1,
+          partner_id: partnerId, round: roundNum,
+          duration: block.duration, mu_type: block.mu_type
+        },
+        on_load: () => {
+          const slider = document.querySelector("input[type='range']");
+          const investP = document.getElementById("invest-preview");
+          const keepP = document.getElementById("keep-preview");
+          const barsEl = document.getElementById("my-bars");
+          const oppBarsEl = document.getElementById("opp-bars");
+          if (!slider || !investP) return;
+          slider.classList.add("slider-hidden-thumb");
+          investP.innerHTML = `投資額：—円 → 相手に渡ると <strong>×${PARAMS.multiplier}</strong>`;
+          keepP.textContent = "手元に残す額：—円";
+          const reveal = () => {
+            slider.classList.remove("slider-hidden-thumb");
+            const idx = parseInt(slider.value);
+            const g = AMOUNTS[idx];
+            const keep = PARAMS.endowment - g;
+            const oppReceive = g * PARAMS.multiplier;
+            investP.innerHTML = `投資額：<strong>${g}円</strong> → 相手に <strong>${oppReceive}円</strong>`;
+            keepP.textContent = `手元に残す額：${keep}円`;
+            barsEl.innerHTML = makeBar("手持ち", keep, PARAMS.endowment, "gold", "");
+            oppBarsEl.innerHTML = makeBar("受取", oppReceive, PARAMS.endowment, "green", "");
+          };
+          slider.addEventListener("input", reveal);
+          slider.addEventListener("pointerdown", reveal);
+        },
+        on_finish: (data) => {
+          const timedOut = (data.response === null || data.response === undefined);
+          const idx = timedOut ? Math.floor(AMOUNTS.length / 2) : parseInt(data.response);
+          const g = AMOUNTS[idx];
+          data.timed_out = timedOut;
+          data.investment = g;
+          data.keep = PARAMS.endowment - g;
+
+          // 返報計算（ラグ付き: s は今回の投資の前の値を使う）
+          const mu = getMu();
+          const result = computeReturn(g, s, mu, delta_j);
+          data.s_before = s;
+          s = result.s_next; // 評判ストック更新（次試行で効く）
+          data.s_after = result.s_next;
+          data.mu = mu;
+          data.delta_j = delta_j;
+          data.r = result.r;
+          data.eta = result.eta;
+          data.return_amount = result.y;
+          data.earnings = (PARAMS.endowment - g) + result.y;
+
+          // デバッグ表示
+          updateDebugInfo({
+            "ブロック": `${blockIdx + 1}/8`,
+            "条件": condLabel,
+            "相手ID": partnerId,
+            "ラウンド": `${roundNum}/${numRounds}`,
+            "μ": mu,
+            "δ_j": delta_j.toFixed(4),
+            "κ": PARAMS.kappa,
+            "θ": PARAMS.theta,
+            "λ": PARAMS.lambda,
+            "投資額 g": g,
+            "相手受取": PARAMS.multiplier * g,
+            "評判 s(before)": data.s_before.toFixed(4),
+            "評判 s(after)": result.s_next.toFixed(4),
+            "返報率 r": result.r.toFixed(4),
+            "ノイズ η": result.eta.toFixed(4),
+            "返報額 y": result.y,
+            "獲得": data.earnings,
+          });
+        }
+      });
+
+      // コイン送出アニメ + 思考中（2-4秒）
+      roundsTimeline.push({
+        type: jsPsychHtmlKeyboardResponse,
+        stimulus: () => {
+          const inv = jsPsych.data.get().filter({ trial_kind: "invest", condition: condLabel, round: roundNum }).last(1).values()[0];
+          const g = inv ? inv.investment : 50;
+          const keep = PARAMS.endowment - g;
+          const oppReceive = g * PARAMS.multiplier;
+          return makeGameBoardHtml({
+            roundNum, oppIcon, oppName,
+            playerBarsHtml: makeBar("手持ち", keep, PARAMS.endowment, "gold", ""),
+            oppBarsHtml: makeBar("受取", oppReceive, PARAMS.endowment, "green", "grow")
+              + `<div style="text-align:center;margin-top:8px;"><span class="thinking-bubble">思考中...</span></div>`,
+            content: ""
+          });
+        },
+        choices: "NO_KEYS",
+        trial_duration: randInt(2000, 4000),
+        data: {
+          phase: "trust_game", trial_kind: "contemplation",
+          condition: condLabel, round: roundNum
+        }
+      });
+
+      // 返報表示（リターンアニメ＋結果）
+      roundsTimeline.push({
+        type: jsPsychHtmlButtonResponse,
+        stimulus: () => {
+          const inv = jsPsych.data.get().filter({ trial_kind: "invest", condition: condLabel, round: roundNum }).last(1).values()[0];
+          const g = inv.investment;
+          const y = inv.return_amount;
+          const earn = inv.earnings;
+          const keep = PARAMS.endowment - g;
+          const oppKept = PARAMS.multiplier * g - y;
+          GAME.playerTotal += earn;
+          GAME.opponentTotal += oppKept;
+          return makeGameBoardHtml({
+            roundNum, oppIcon, oppName,
+            oppBarsHtml: makeBar("保持", oppKept, PARAMS.endowment, "red", ""),
+            playerBarsHtml: makeBar("手持ち", keep, PARAMS.endowment, "gold", "")
+              + makeBar("リターン", y, PARAMS.endowment, "green", "grow"),
+            content: `<div class="center mid" style="margin-top:12px;">
+            <p>あなたの投資：<strong>${g}円</strong> → 相手受取：${PARAMS.multiplier * g}円</p>
+            <p>相手から返ってきた額：<strong>${y}円</strong></p>
+            <p>あなたの今回の獲得：<strong>${earn}円</strong></p>
+          </div>`
+          });
+        },
+        choices: ["次へ"],
+        data: {
+          phase: "trust_game", trial_kind: "return_display",
+          condition: condLabel, round: roundNum
+        }
+      });
+
+      // --- ミニ質問（ラウンド4・8の返報終了後、3点期待質問） ---
+      if (roundNum === 4 || roundNum === 8) {
+        // 善意知覚（7段階ボタン）
+        roundsTimeline.push({
+          type: jsPsychHtmlButtonResponse,
+          stimulus: `
+          <div class="center">
+            <div class="qwrap">
+              <div class="qtitle">今の返し方に相手の好意／協力性を感じた</div>
+              <div class="scale-labels"><span>全くそう思わない</span><span>非常にそう思う</span></div>
+            </div>
+          </div>`,
+          choices: ["1", "2", "3", "4", "5", "6", "7"],
+          data: {
+            phase: "trust_game", trial_kind: "mini_q_goodwill",
+            condition: condLabel, round: roundNum,
+            block_index: blockIdx + 1, partner_id: partnerId
+          },
+          on_finish: (data) => { data.response_value = data.response + 1; }
+        });
+
+        // 多点返報期待（20円・50円・80円）
+        [20, 50, 80].forEach(amt => {
+          const maxReturn = PARAMS.multiplier * amt;
+          roundsTimeline.push({
+            type: jsPsychSurveyText,
+            questions: [{
+              prompt: `次に${amt}円投資したら、いくら返すと思いますか？（0〜${maxReturn}の数字で入力）`,
+              name: "expected_return",
+              required: true
+            }],
+            data: {
+              phase: "trust_game", trial_kind: "mini_q_expectancy",
+              condition: condLabel, round: roundNum,
+              block_index: blockIdx + 1, partner_id: partnerId,
+              probe_amount: amt
+            },
+            on_finish: (data) => {
+              const val = parseInt(data.response.expected_return);
+              data.expected_return = isNaN(val) ? null : clamp(val, 0, maxReturn);
+            }
+          });
+        });
+      }
+
+      // ISI（1.5-3秒）
+      roundsTimeline.push(makeFixationISI({
+        phase: "trust_game", condition: condLabel, round: roundNum
+      }));
+    }
+    timeline.push({ timeline: roundsTimeline });
+
+    // --- ブロック終了時質問（7項目、7段階ボタン、順序ランダマイズ） ---
+    const blockEndQuestions = [
+      { key: "norm", text: "この相手に私も何かを返すべきだと思う" },
+      { key: "goodwill", text: "この相手は私に対して好意的／協力的に返していたと感じた" },
+      { key: "mechanical1", text: "この相手の返し方は機械的・パターン的だった" },
+      { key: "mechanical2", text: "この相手は感情や意図を持って返していると感じた" },
+      { key: "eval_avoid", text: "この相手に悪く思われたくない／嫌われたくないと感じた" },
+      { key: "eval_seek", text: "この相手に良く思われたい／好かれたいと感じた" },
+      { key: "contingency_belief", text: "自分が多く渡すほど、この相手が返す割合が高くなると感じた" },
+    ];
+    const shuffledQ = shuffle(blockEndQuestions);
+    const blockEndTimeline = [];
+
+    shuffledQ.forEach((q) => {
+      blockEndTimeline.push({
+        type: jsPsychHtmlButtonResponse,
+        stimulus: `
+        <div class="center">
+          <div class="small">相手 ${partnerId} についての質問</div>
+          <div class="spacer"></div>
+          <div class="qwrap">
+            <div class="qtitle">${q.text}</div>
+            <div class="scale-labels"><span>全くそう思わない</span><span>非常にそう思う</span></div>
+          </div>
+        </div>`,
+        choices: ["1", "2", "3", "4", "5", "6", "7"],
+        data: {
+          phase: "trust_game", trial_kind: "block_end_q",
+          condition: condLabel, block_index: blockIdx + 1,
+          partner_id: partnerId, question_key: q.key
+        },
+        on_finish: (data) => { data.response_value = data.response + 1; }
+      });
+    });
+    timeline.push({ timeline: blockEndTimeline });
+  });
+
+  /* =========================================================
+     実験終了時アンケート（11項目、7段階スライダー、順序ランダマイズ）
+  ========================================================= */
+  const finalQuestionItems = [
+    { key: "recip_altruism_1", text: "今は損でも、将来自分に返ってきそうなら協力する。", subscale: "互恵依存利他" },
+    { key: "recip_altruism_2", text: "相手が協力的だと分かったとき、こちらの協力も増やす。", subscale: "互恵依存利他" },
+    { key: "unconditional_altruism", text: "見返りがなくても、困っている人には自ら手を差し伸べたい。", subscale: "無条件利他" },
+    { key: "general_coop_norm", text: "相手がどうであれ、他者には協力的に振る舞うべきだと思う。", subscale: "一般協力規範" },
+    { key: "recip_norm_1", text: "誰かに助けてもらったら、必ずお返しをするべきだ。", subscale: "互恵規範" },
+    { key: "recip_norm_2", text: "受けた恩を返さないのは、人としてよくないことだと思う。", subscale: "互恵規範" },
+    { key: "general_trust_1", text: "たいていの人は信頼できると思う。", subscale: "一般的信頼" },
+    { key: "general_trust_2", text: "たいていの人は基本的に正直だと思う。", subscale: "一般的信頼" },
+    { key: "eval_concern_1", text: "他人から「自分の利益しか考えない非協力的な人」と思われるのが嫌だ。", subscale: "評価獲得・回避" },
+    { key: "eval_concern_2", text: "周囲から自分がどう評価されているかが、いつも気になる。", subscale: "評価獲得・回避" },
+    { key: "risk_aversion", text: "一般的に言って、リスク（危険や不確実性）を好んで取る方だ", subscale: "リスク回避" },
+  ];
+
+  const shuffledFinalQ = shuffle(finalQuestionItems);
+  const finalQTimeline = [];
+
+  finalQTimeline.push(instructionPage(`
+  <p>課題は終了しました。</p>
+  <p>最後に、あなたの考え方についていくつかお聞きします。<br>
+  正解・不正解はありません。直感的にお答えください。</p>
+`));
+
+  shuffledFinalQ.forEach((q) => {
+    finalQTimeline.push({
+      type: jsPsychHtmlSliderResponse,
+      stimulus: `
+      <div class="center">
+        <div class="qwrap">
+          <div class="qtitle">${q.text}</div>
+        </div>
+      </div>`,
+      min: 1, max: 7, step: 1, slider_start: 4,
+      labels: ["1<br>全くそう<br>思わない", "2", "3", "4", "5", "6", "7<br>非常にそう<br>思う"],
+      button_label: "次へ",
+      require_movement: true,
+      data: {
+        phase: "final_questionnaire", trial_kind: "final_q",
+        question_key: q.key, subscale: q.subscale
+      },
+      on_finish: (data) => { data.response_value = parseInt(data.response); }
+    });
+  });
+  timeline.push({ timeline: finalQTimeline });
+
+  /* =========================================================
+     寄付課題（匿名/非匿名をランダム割り当て）
+  ========================================================= */
+  const donationAnonymous = Math.random() < 0.5; // true=匿名, false=非匿名
+  const anonymityLabel = donationAnonymous ? "匿名" : "非匿名";
+  const anonymityExplanation = donationAnonymous
+    ? "個人の氏名は赤十字には伝わらず、研究室がまとめて「匿名」として送金します。"
+    : "あなたの「氏名」と「寄付額」が寄付者リストに記載され、赤十字に報告されます。";
+
+  const donationTimeline = [];
+  donationTimeline.push({
+    type: jsPsychHtmlSliderResponse,
+    stimulus: `
+    <div class="center">
+      <h2>最終ボーナスと寄付のお願い</h2>
+      <p>ゲーム終了にともない、追加で1000円があなたに与えられます。<br>
+      このうち、任意の金額（10円単位）を日本赤十字社へ寄付することができます。</p>
+      <p><strong>【今回の寄付の扱い】</strong> あなたの寄付は、<strong>${anonymityLabel}</strong> として扱われます。</p>
+      <p>${anonymityExplanation}</p>
+      <p class="small">寄付しない選択をしても不利益は一切ありません。</p>
+      <div class="spacer"></div>
+      <div id="donation-preview" class="amount-preview">寄付する額：—円</div>
+      <div id="donation-keep" class="small">あなたが受け取る額：—円</div>
+    </div>`,
+    min: 0,
+    max: PARAMS.donation_max / PARAMS.donation_step,
+    step: 1,
+    slider_start: 0,
+    labels: ["0円", "500円", "1000円"],
+    button_label: "確定",
+    require_movement: true,
+    data: {
+      phase: "donation", trial_kind: "donation_choice",
+      anonymity: anonymityLabel
+    },
+    on_load: () => {
+      const slider = document.querySelector("input[type='range']");
+      const prevD = document.getElementById("donation-preview");
+      const prevK = document.getElementById("donation-keep");
+      if (!slider) return;
+      slider.addEventListener("input", () => {
+        const val = parseInt(slider.value) * PARAMS.donation_step;
+        prevD.textContent = `寄付する額：${val}円`;
+        prevK.textContent = `あなたが受け取る額：${PARAMS.donation_max - val}円`;
+      });
+    },
+    on_finish: (data) => {
+      const val = parseInt(data.response) * PARAMS.donation_step;
+      data.donation_amount = val;
+      data.donation_keep = PARAMS.donation_max - val;
+    }
+  });
+
+  // 寄付確認画面
+  donationTimeline.push({
+    type: jsPsychHtmlButtonResponse,
+    stimulus: () => {
+      const donData = jsPsych.data.get().filter({ trial_kind: "donation_choice" }).last(1).values()[0];
+      if (!donData) return `<div class="center mid"><p>（スキップされました）</p></div>`;
+      return `
+      <div class="center mid">
+        <h2>寄付内容の確認</h2>
+        <p>寄付額：<strong>${donData.donation_amount}円</strong></p>
+        <p>あなたが受け取る額：<strong>${donData.donation_keep}円</strong></p>
+        <p class="small">（${anonymityLabel}として処理されます）</p>
+      </div>`;
+    },
+    choices: ["確定"],
+    data: { phase: "donation", trial_kind: "donation_confirm" }
+  });
+  timeline.push({ timeline: donationTimeline });
+
+  /* =========================================================
+     実験終了
+  ========================================================= */
+  timeline.push({
+    type: jsPsychHtmlButtonResponse,
+    stimulus: `
+    <div class="center mid">
+      <p>実験は以上です。ご協力ありがとうございました。</p>
+      <p class="small">「終了」を押すとデータが保存されます。</p>
+    </div>`,
+    choices: ["終了"],
+    data: { phase: "end", trial_kind: "end_screen" }
+  });
+  
+async function uploadExperimentData() {
+  const allData = jsPsych.data.get().values();
+  const db = window.firebaseDB;
+  const col = window.firebaseCollection;
+  const add = window.firebaseAddDoc;
+  const pid = PARTICIPANT_ID;
+  const rc = ROOM_CODE;
+
+  // ── Sanitize: replace undefined with null ──────────────
+  function sanitize(obj) {
+    return Object.fromEntries(
+      Object.entries(obj).map(([k, v]) => [k, v === undefined ? null : v])
+    );
+  }
+
+  const promises = [];
+
+  // ── 1. Participant metadata ──────────────────────────────
+  promises.push(add(col(db, "participants"), sanitize({
+    participant_id: pid,
+    room_code: rc,
+    timestamp: new Date().toISOString(),
+    player_name: GAME.playerName,
+    player_icon: GAME.playerIcon,
+    donation_anonymity: allData.find(t => t.trial_kind === "donation_choice")?.anonymity ?? null,
+  })));
+
+  // ── 2. Investment trials ─────────────────────────────────
+  allData.filter(t => t.trial_kind === "invest").forEach(t => {
+    promises.push(add(col(db, "invest_trials"), sanitize({
+      participant_id: pid, room_code: rc,
+      block_index: t.block_index, condition: t.condition,
+      partner_id: t.partner_id, duration: t.duration,
+      mu_type: t.mu_type, round: t.round,
+      investment: t.investment, keep: t.keep,
+      return_amount: t.return_amount, earnings: t.earnings,
+      r: t.r, mu: t.mu, delta_j: t.delta_j,
+      s_before: t.s_before, s_after: t.s_after,
+      timed_out: t.timed_out ?? false, rt: t.rt,
+    })));
+  });
+
+  // ── 3. Block-end questionnaire ───────────────────────────
+  allData.filter(t => t.trial_kind === "block_end_q").forEach(t => {
+    promises.push(add(col(db, "block_end_q"), sanitize({
+      participant_id: pid, room_code: rc,
+      block_index: t.block_index, condition: t.condition,
+      partner_id: t.partner_id, question_key: t.question_key,
+      response_value: t.response_value, rt: t.rt,
+    })));
+  });
+
+  // ── 4a. Mini goodwill ────────────────────────────────────
+  allData.filter(t => t.trial_kind === "mini_q_goodwill").forEach(t => {
+    promises.push(add(col(db, "mini_q_goodwill"), sanitize({
+      participant_id: pid, room_code: rc,
+      block_index: t.block_index, condition: t.condition,
+      partner_id: t.partner_id, round: t.round,
+      response_value: t.response_value, rt: t.rt,
+    })));
+  });
+
+  // ── 4b. Mini expectancy ──────────────────────────────────
+  allData.filter(t => t.trial_kind === "mini_q_expectancy").forEach(t => {
+    promises.push(add(col(db, "mini_q_expectancy"), sanitize({
+      participant_id: pid, room_code: rc,
+      block_index: t.block_index, condition: t.condition,
+      partner_id: t.partner_id, round: t.round,
+      probe_amount: t.probe_amount,
+      expected_return: t.expected_return, rt: t.rt,
+    })));
+  });
+
+  // ── 5. Final questionnaire ───────────────────────────────
+  allData.filter(t => t.trial_kind === "final_q").forEach(t => {
+    promises.push(add(col(db, "final_questionnaire"), sanitize({
+      participant_id: pid, room_code: rc,
+      question_key: t.question_key, subscale: t.subscale,
+      response_value: t.response_value, rt: t.rt,
+    })));
+  });
+
+  // ── 6. Donation ──────────────────────────────────────────
+  const donation = allData.find(t => t.trial_kind === "donation_choice");
+  if (donation) {
+    promises.push(add(col(db, "donations"), sanitize({
+      participant_id: pid, room_code: rc,
+      anonymity: donation.anonymity,
+      donation_amount: donation.donation_amount,
+      donation_keep: donation.donation_keep,
+      rt: donation.rt,
+    })));
+  }
+
+  const results = await Promise.allSettled(promises);
+  const failed = results.filter(r => r.status === "rejected");
+  if (failed.length > 0) {
+    console.error(`${failed.length} uploads failed:`, failed.map(f => f.reason));
+    alert(`Warning: ${failed.length} records failed to upload. Check console.`);
+  } else {
+    console.log(`All ${results.length} records uploaded successfully.`);
+  }
+}
+
+  function startExperiment() {
+    jsPsych = initJsPsych({
+  display_element: "jspsych-target",
+  on_finish: async () => {
+    document.getElementById("jspsych-target").innerHTML =
+      `<div style="text-align:center;font-size:20px;font-family:sans-serif;">
+        <p>データを保存しています...</p>
+        <div class="spinner" style="margin:20px auto;"></div>
+      </div>`;
+
+    try {
+      await uploadExperimentData();
+    } catch (err) {
+      console.error("Upload error:", err);
+      alert("Upload failed: " + err.message);
+    }
+
+    // CSV download stays exactly as before
+    const csv = jsPsych.data.get().csv();
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.click();
+
+    // NEW: signal React that the experiment is done
+    window.parent.postMessage(
+      {
+        type: "EXPERIMENT_COMPLETE",
+        participantId: PARTICIPANT_ID
+      },
+      "*"
+    );
+  }
+});
+
+    const skipBtn = document.createElement("button");
+
+    skipBtn.id = "debug-skip-btn";
+    skipBtn.textContent = "DEBUG: Skip to End";
+
+    skipBtn.onclick = () => {
+
+      if (!confirm("Jump directly to experiment end?")) {
+        return;
+      }
+
+      jsPsych.endExperiment("DEBUG_SKIP");
+
+    };
+
+    document.body.appendChild(skipBtn);
+
+    jsPsych.run(timeline);
+  }
+  const SLIDES_EMBED_URL = "https://docs.google.com/presentation/d/e/2PACX-1vTej7qEIB-rTGX-hzSDlGWk3X8s8t_fvffqAMDcatR5PDdEK6u4VGPuC_0nWaJOAexgI9PhoWPgYRgs/pub?start=false&loop=false&delayms=3000";
+window.addEventListener("load", () => {
+  startExperiment();
+});
+</script>
+
+</html>
