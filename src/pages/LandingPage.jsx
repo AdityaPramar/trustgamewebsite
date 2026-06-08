@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import imagehome from '../assets/imagehome.png';
 {/*import Navbar from "../components/Navbar";*/}
 const VALID_CODES = ["RM10402", "RM20402", "RM30402"];
-const SLIDES_URL =
   "https://docs.google.com/presentation/d/e/2PACX-1vTej7qEIB-rTGX-hzSDlGWk3X8s8_t_fvffqAMDcatR5PDdEK6u4VGPuC_0nWaJOAexgI9PhoWPgYRgs/pub?start=false&loop=false&delayms=3000";
 
 export default function LandingPage() {
@@ -56,20 +55,21 @@ export default function LandingPage() {
             信頼ゲーム実験へようこそ。このたびは実験にご参加いただきありがとうございます。まずは下のボタンから実験説明をご覧いただき、実験の流れやルールをご確認ください。 説明を読み終えた後は、ページ下部までスクロールし、参加コードを入力して実験を開始してください。どうぞよろしくお願いいたします。
           </p>
 
-          <button
-  onClick={() => window.open(SLIDES_URL, "_blank")}
-  style={{
-    padding: "16px 32px",
-    fontSize: "18px",
-    cursor: "pointer",
-    borderRadius: "8px",
-    backgroundColor: "#6699ee",
-    color: "white",
-    border: "none",
-  }}
->
-  実験説明を見る
-</button>
+
+        <button
+          onClick={() => navigate("/explanation")}
+          style={{
+            padding: "16px 32px",
+            fontSize: "18px",
+            cursor: "pointer",
+            borderRadius: "8px",
+            backgroundColor: "#6699ee",
+            color: "white",
+            border: "none",
+          }}
+        >
+          実験説明を見る
+        </button>
         </div>
 
         {/* RIGHT */}

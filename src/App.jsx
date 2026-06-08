@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import LandingPage from "./pages/LandingPage";
 import ExperimentPage from "./pages/ExperimentPage";
 import DonePage from "./pages/DonePage";
-import About from "./pages/About";
+import Explanation from "./pages/Explanation";
 
 import DesktopOnly from "./components/DesktopOnly";
 
@@ -21,7 +21,7 @@ export default function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/experiment" element={<ExperimentPage />} />
         <Route path="/done" element={<DonePage />} />
-        <Route path="/about" element={<About />} />
+        <Route path="/explanation" element={<Explanation />} />
       </Routes>
     </BrowserRouter>
   );
