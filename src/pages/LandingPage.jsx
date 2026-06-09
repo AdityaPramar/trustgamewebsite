@@ -96,7 +96,7 @@ export default function LandingPage() {
       {/* START SECTION */}
       <section
         style={{
-          minHeight: "70vh",
+          minHeight: "97vh",
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
@@ -148,7 +148,7 @@ export default function LandingPage() {
           }}
         >
           {error &&
-            "❌ コードが正しくありません。もう一度入力してください。"}
+            "コードが正しくありません。もう一度入力してください。"}
         </div>
 
         <button
