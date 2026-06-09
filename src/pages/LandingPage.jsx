@@ -9,6 +9,7 @@ export default function LandingPage() {
   const [code, setCode] = useState("");
   const [error, setError] = useState(false);
   const navigate = useNavigate();
+  const isExplanationDone = !!localStorage.getItem("participant_mail");
 
   const handleStart = () => {
     if (VALID_CODES.includes(code.trim().toUpperCase())) {
@@ -152,18 +153,24 @@ export default function LandingPage() {
 
         <button
   onClick={handleStart}
+  disabled={!isExplanationDone}
   style={{
     padding: "18px 40px",
     fontSize: "20px",
-    cursor: "pointer",
+    cursor: isExplanationDone ? "pointer" : "not-allowed",
     borderRadius: "8px",
-    backgroundColor: "#6699ee",
+    backgroundColor: isExplanationDone ? "#6699ee" : "#bbcae5ff",
     color: "white",
     border: "none",
   }}
 >
   実験開始
 </button>
+{!isExplanationDone && (
+  <p style={{ color: "#888", fontSize: "0.95rem", marginTop: "8px" }}>
+    ※ 先に実験説明をお読みください。
+  </p>
+)}
       </section>
 
   <footer

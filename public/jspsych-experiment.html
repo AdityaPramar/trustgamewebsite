@@ -506,6 +506,7 @@ body {
   const PARTICIPANT_ID = crypto.randomUUID();
   const urlParams = new URLSearchParams(window.location.search);
   const ROOM_CODE = urlParams.get("roomCode") ?? null;
+  const MAIL_ID = urlParams.get("mailId") ?? localStorage.getItem("participant_mail") ?? null;
   "use strict";
 
   /* =========================================================
@@ -1577,13 +1578,16 @@ async function uploadExperimentData() {
 
   // ── 1. Participant metadata ──────────────────────────────
   promises.push(add(col(db, "participants"), sanitize({
-    participant_id: pid,
-    room_code: rc,
-    timestamp: new Date().toISOString(),
-    player_name: GAME.playerName,
-    player_icon: GAME.playerIcon,
-    donation_anonymity: allData.find(t => t.trial_kind === "donation_choice")?.anonymity ?? null,
-  })));
+  participant_id: pid,
+  room_code: rc,
+  mail_id: MAIL_ID,
+  timestamp: new Date().toISOString(),
+  player_name: GAME.playerName,
+  player_icon: GAME.playerIcon,
+  player_total: GAME.playerTotal,
+  donation_anonymity: allData.find(t => t.trial_kind === "donation_choice")?.anonymity ?? null,
+})));
+localStorage.removeItem("participant_mail");
 
   // ── 2. Investment trials ─────────────────────────────────
   allData.filter(t => t.trial_kind === "invest").forEach(t => {
@@ -1696,6 +1700,7 @@ async function uploadExperimentData() {
       "*"
     );
   }
+  
 });
 
     const skipBtn = document.createElement("button");

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom"; 
 import donations from '../assets/donations.png';
 import iconselection from '../assets/iconselection.png';
 import opponent from '../assets/opponent.png';
@@ -6,16 +7,22 @@ import opponent from '../assets/opponent.png';
 export default function Explanation() {
   const [checked, setChecked] = useState(false);
   const [showError, setShowError] = useState(false);
+  const [mailId, setMailId] = useState("");
+  const [showMailError, setShowMailError] = useState(false);
+  const navigate = useNavigate(); 
 
   const handleReturn = () => {
-    if (!checked) {
-      setShowError(true);
-    } else {
-      setShowError(false);
-      // navigate to home — replace with your router call e.g. navigate("/")
-      window.location.href = "/";
-    }
-  };
+  const mailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mailId.trim());
+  if (!checked || !mailValid) {
+    setShowError(!checked);
+    setShowMailError(!mailValid);
+  } else {
+    setShowError(false);
+    setShowMailError(false);
+    localStorage.setItem("participant_mail", mailId.trim());  // ← add this
+    navigate(`/?mailId=${encodeURIComponent(mailId.trim())}`);
+  }
+};
 
   return (
     <>
@@ -33,7 +40,7 @@ export default function Explanation() {
 
         <hr style={{ marginBottom: "80px", borderColor: "#e0e0e0" }} />
 
-        {/* ── Slide 2: Overview (no image → centered) ── */}
+        {/* ── Slide 2: Overview ── */}
         <section style={{ textAlign: "center", marginBottom: "80px" }}>
           <p style={{ fontSize: "1.1rem", lineHeight: "2", maxWidth: "680px", margin: "0 auto" }}>
             この課題では、あなたは複数の相手と「投資」と「返報」のやり取りを繰り返し行います。
@@ -45,7 +52,7 @@ export default function Explanation() {
 
         <hr style={{ marginBottom: "80px", borderColor: "#e0e0e0" }} />
 
-        {/* ── Slide 3: 課題の流れ (image on right) ── */}
+        {/* ── Slide 3: 課題の流れ ── */}
         <section style={{ marginBottom: "80px" }}>
           <h2 style={{ fontSize: "1.8rem", fontWeight: "bold", marginBottom: "28px" }}>
             課題の流れ
@@ -89,7 +96,7 @@ export default function Explanation() {
 
         <hr style={{ marginBottom: "80px", borderColor: "#e0e0e0" }} />
 
-        {/* ── Slide 4: 各ラウンドについて (no image → centered) ── */}
+        {/* ── Slide 4: 各ラウンドについて ── */}
         <section style={{ marginBottom: "80px" }}>
           <h2 style={{ fontSize: "1.8rem", fontWeight: "bold", marginBottom: "28px", textAlign: "center" }}>
             各ラウンドについて
@@ -115,7 +122,7 @@ export default function Explanation() {
 
         <hr style={{ marginBottom: "80px", borderColor: "#e0e0e0" }} />
 
-        {/* ── Slide 5: 投資額の選択方法 (image on left) ── */}
+        {/* ── Slide 5: 投資額の選択方法 ── */}
         <section style={{ marginBottom: "80px" }}>
           <h2 style={{ fontSize: "1.8rem", fontWeight: "bold", marginBottom: "28px" }}>
             投資額の選択方法
@@ -157,7 +164,7 @@ export default function Explanation() {
 
         <hr style={{ marginBottom: "80px", borderColor: "#e0e0e0" }} />
 
-        {/* ── Slide 6: 相手とのやり取り回数 (image on right) ── */}
+        {/* ── Slide 6: 相手とのやり取り回数 ── */}
         <section style={{ marginBottom: "80px" }}>
           <h2 style={{ fontSize: "1.8rem", fontWeight: "bold", marginBottom: "28px" }}>
             相手とのやり取り回数
@@ -195,7 +202,7 @@ export default function Explanation() {
 
         <hr style={{ marginBottom: "80px", borderColor: "#e0e0e0" }} />
 
-        {/* ── Slide 7: 質問項目について (no image → centered) ── */}
+        {/* ── Slide 7: 質問項目について ── */}
         <section style={{ marginBottom: "80px" }}>
           <h2 style={{ fontSize: "1.8rem", fontWeight: "bold", marginBottom: "28px", textAlign: "center" }}>
             質問項目について
@@ -223,7 +230,7 @@ export default function Explanation() {
 
         <hr style={{ marginBottom: "80px", borderColor: "#e0e0e0" }} />
 
-        {/* ── Slide 8: 追加報酬について (no image → centered) ── */}
+        {/* ── Slide 8: 追加報酬について ── */}
         <section style={{ marginBottom: "80px" }}>
           <h2 style={{ fontSize: "1.8rem", fontWeight: "bold", marginBottom: "28px", textAlign: "center" }}>
             追加報酬について
@@ -244,7 +251,7 @@ export default function Explanation() {
 
         <hr style={{ marginBottom: "80px", borderColor: "#e0e0e0" }} />
 
-        {/* ── Slide 9: 寄付課題について (no image → centered) ── */}
+        {/* ── Slide 9: 寄付課題について ── */}
         <section style={{ marginBottom: "80px" }}>
           <h2 style={{ fontSize: "1.8rem", fontWeight: "bold", marginBottom: "28px", textAlign: "center" }}>
             寄付課題について
@@ -260,7 +267,7 @@ export default function Explanation() {
 
         <hr style={{ marginBottom: "80px", borderColor: "#e0e0e0" }} />
 
-        {/* ── Slide 10: 参加コードについて (no image → centered) ── */}
+        {/* ── Slide 10: 参加コードについて ── */}
         <section style={{ marginBottom: "80px" }}>
           <h2 style={{ fontSize: "1.8rem", fontWeight: "bold", marginBottom: "28px", textAlign: "center" }}>
             参加コードについて
@@ -308,7 +315,7 @@ export default function Explanation() {
 
         <hr style={{ marginBottom: "80px", borderColor: "#e0e0e0" }} />
 
-        {/* ── Slide 11: 注意事項 (no image → centered) ── */}
+        {/* ── Slide 11: 注意事項 ── */}
         <section style={{ marginBottom: "60px" }}>
           <h2 style={{ fontSize: "1.8rem", fontWeight: "bold", marginBottom: "28px", textAlign: "center" }}>
             注意事項
@@ -343,6 +350,43 @@ export default function Explanation() {
 
         {/* ── Confirmation + Button ── */}
         <section style={{ textAlign: "center", marginBottom: "120px" }}>
+
+          {/* ── Mail ID input ── */}
+          <div style={{ marginBottom: "28px" }}>
+            <label
+              htmlFor="mail-input"
+              style={{ display: "block", fontSize: "1.05rem", marginBottom: "10px" }}
+            >
+              メールアドレスを入力してください（謝礼の振込に使用します）
+            </label>
+            <input
+              id="mail-input"
+              type="email"
+              value={mailId}
+              onChange={(e) => {
+                setMailId(e.target.value);
+                if (showMailError) setShowMailError(false);
+              }}
+              placeholder="example@email.com"
+              style={{
+                padding: "10px 16px",
+                fontSize: "1rem",
+                borderRadius: "8px",
+                border: showMailError ? "2px solid #c0392b" : "2px solid #ccc",
+                width: "320px",
+                maxWidth: "100%",
+                outline: "none",
+                boxSizing: "border-box",
+              }}
+            />
+            {showMailError && (
+              <p style={{ color: "#c0392b", marginTop: "8px", fontSize: "0.95rem" }}>
+                ※ 有効なメールアドレスを入力してください。
+              </p>
+            )}
+          </div>
+
+          {/* ── Checkbox ── */}
           <label
             style={{
               display: "inline-flex",
@@ -380,9 +424,9 @@ export default function Explanation() {
                 fontWeight: "600",
                 borderRadius: "8px",
                 border: "none",
-                backgroundColor: checked ? "#6699ee" : "#bbcae5ff",
+                backgroundColor: (checked && mailId) ? "#6699ee" : "#bbcae5ff",
                 color: "#fff",
-                cursor: checked ? "pointer" : "not-allowed",
+                cursor: (checked && mailId) ? "pointer" : "not-allowed",
                 transition: "background-color 0.2s",
               }}
             >
