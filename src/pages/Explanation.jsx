@@ -369,15 +369,18 @@ export default function Explanation() {
               }}
               placeholder="example@email.com"
               style={{
-                padding: "10px 16px",
-                fontSize: "1rem",
-                borderRadius: "8px",
-                border: showMailError ? "2px solid #c0392b" : "2px solid #ccc",
-                width: "320px",
-                maxWidth: "100%",
-                outline: "none",
-                boxSizing: "border-box",
-              }}
+              margin: "25px",
+              color : "#4c4c4cff",
+              padding: "10px 16px",
+              fontSize: "1rem",
+              borderRadius: "8px",
+              border: showMailError ? "2px solid #c0392b" : "2px dotted #dbdbdbff",
+              backgroundColor: "whitesmoke",
+              width: "320px",
+              maxWidth: "100%",
+              outline: "none",
+              boxSizing: "border-box",
+            }}
             />
             {showMailError && (
               <p style={{ color: "#c0392b", marginTop: "8px", fontSize: "0.95rem" }}>
@@ -397,15 +400,45 @@ export default function Explanation() {
               userSelect: "none",
             }}
           >
-            <input
-              type="checkbox"
-              checked={checked}
-              onChange={(e) => {
-                setChecked(e.target.checked);
-                if (e.target.checked) setShowError(false);
-              }}
-              style={{ width: "18px", height: "18px", cursor: "pointer" }}
-            />
+            <div style={{
+  display: "inline-block",
+  width: "20px",
+  height: "20px",
+  borderRadius: "4px",
+  backgroundColor: "whitesmoke",
+  position: "relative",
+  flexShrink: 0,
+}}>
+  <input
+    type="checkbox"
+    checked={checked}
+    onChange={(e) => {
+      setChecked(e.target.checked);
+      if (e.target.checked) setShowError(false);
+    }}
+    style={{
+      position: "absolute",
+      inset: 0,
+      width: "100%",
+      height: "100%",
+      margin: 0,
+      cursor: "pointer",
+      opacity: 0,  // hide native, keep clickable
+    }}
+  />
+  {checked && (
+    <span style={{
+      position: "absolute",
+      inset: 0,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      fontSize: "14px",
+      color: "#6699ee",
+      pointerEvents: "none",
+    }}>●</span>
+  )}
+</div>
             説明書を読みました
           </label>
 
