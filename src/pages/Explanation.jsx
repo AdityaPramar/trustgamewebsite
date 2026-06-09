@@ -19,7 +19,7 @@ export default function Explanation() {
   } else {
     setShowError(false);
     setShowMailError(false);
-    localStorage.setItem("participant_mail", mailId.trim());  // ← add this
+    localStorage.setItem("participant_mail", mailId.trim()); 
     navigate(`/?mailId=${encodeURIComponent(mailId.trim())}`);
   }
 };
@@ -423,7 +423,7 @@ export default function Explanation() {
       height: "100%",
       margin: 0,
       cursor: "pointer",
-      opacity: 0,  // hide native, keep clickable
+      opacity: 0, 
     }}
   />
   {checked && (
