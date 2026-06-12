@@ -1,18 +1,21 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+//import { useEffect } from "react";
 import imagehome from '../assets/imagehome.png';
 {/*import Navbar from "../components/Navbar";*/}
 const VALID_CODES = ["RM10402", "RM20402", "RM30402"];
   "https://docs.google.com/presentation/d/e/2PACX-1vTej7qEIB-rTGX-hzSDlGWk3X8s8_t_fvffqAMDcatR5PDdEK6u4VGPuC_0nWaJOAexgI9PhoWPgYRgs/pub?start=false&loop=false&delayms=3000";
 
+  
 export default function LandingPage() {
   const [code, setCode] = useState("");
   const [error, setError] = useState(false);
   const navigate = useNavigate();
-  const isExplanationDone = !!localStorage.getItem("participant_mail");
+const location = useLocation();  // add this
 
+const isExplanationDone = !!location.state?.explanationDone;
   const handleStart = () => {
-    if (VALID_CODES.includes(code.trim().toUpperCase())) {
+        if (VALID_CODES.includes(code.trim().toUpperCase())) {
       navigate(`/experiment?roomCode=${code.trim().toUpperCase()}`);
     } else {
       setError(true);

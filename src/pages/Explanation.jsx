@@ -20,7 +20,9 @@ export default function Explanation() {
     setShowError(false);
     setShowMailError(false);
     localStorage.setItem("participant_mail", mailId.trim()); 
-    navigate(`/?mailId=${encodeURIComponent(mailId.trim())}`);
+    navigate(`/?mailId=${encodeURIComponent(mailId.trim())}`, {
+  state: { explanationDone: true }
+});
   }
 };
 
