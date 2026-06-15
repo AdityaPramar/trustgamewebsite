@@ -12,7 +12,7 @@ export default function Explanation() {
   const navigate = useNavigate(); 
 
   const handleReturn = () => {
-  const mailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mailId.trim());
+  const mailValid = /^\d+$/.test(mailId.trim());
   if (!checked || !mailValid) {
     setShowError(!checked);
     setShowMailError(!mailValid);
@@ -78,7 +78,7 @@ export default function Explanation() {
               </ul>
               <p style={{ marginTop: "24px", fontSize: "1rem", lineHeight: "1.8", color: "#333" }}>
                 相手ごとに、やり取り回数は異なります。短期相手とは3〜4回、長期相手とは
-                10〜12回の投資ラウンドを行います。この情報は各ブロックの開始時に表示されます。
+                10〜12回のやり取りを行います。この情報は各ブロックの開始時に表示されます。
               </p>
             </div>
             <div
@@ -104,7 +104,7 @@ export default function Explanation() {
             各ラウンドについて
           </h2>
           <div style={{ maxWidth: "640px", margin: "0 auto", fontSize: "1.05rem", lineHeight: "1.9" }}>
-            <p>毎ラウンド、あなたには<strong>100円</strong>が与えられます。その中から、相手に渡す金額（0〜100円）を選択してください。</p>
+            <p>毎ラウンド、あなたには<strong>100円</strong>が与えられます。<br/>その中から、相手に渡す金額（0〜100円）を選択してください。</p>
             <p style={{ marginTop: "16px" }}>あなたが渡した金額は、相手に届く時点で<strong>3倍</strong>になります。</p>
             <div
               style={{
@@ -118,14 +118,14 @@ export default function Explanation() {
               <p style={{ margin: 0, fontWeight: "600", marginBottom: "8px" }}>例：</p>
               <p style={{ margin: 0 }}>あなたが40円投資 → 相手は120円を受け取る</p>
             </div>
-            <p>相手は、その中から一部をあなたに返します。返ってきた金額は自動的に受け取ります。</p>
+            <p>相手は、その中から一部をあなたに返します。<br/>返ってきた金額は自動的に受け取ります。</p>
           </div>
         </section>
 
         <hr style={{ marginBottom: "80px", borderColor: "#e0e0e0" }} />
 
         {/* ── Slide 5: 投資額の選択方法 ── */}
-        <section style={{ marginBottom: "80px" }}>
+        <section style={{ marginBottom: "80px"}}>
           <h2 style={{ fontSize: "1.8rem", fontWeight: "bold", marginBottom: "28px" }}>
             投資額の選択方法
           </h2>
@@ -142,7 +142,7 @@ export default function Explanation() {
             >
               <img src={donations} alt="スライダー投資画面" style={{ width: "100%", height: "100%", objectFit: "contain", borderRadius: "6px" }} />
             </div>
-            <div style={{ flex: 1, fontSize: "1.05rem", lineHeight: "1.9" }}>
+            <div style={{ flex: 1, fontSize: "1.05rem", lineHeight: "1.9", textAlign:"left" }}>
               <p>投資額はスライダーを使って選択します。</p>
               <p style={{ marginTop: "12px" }}>スライダーを動かすと、以下が表示されます。</p>
               <ul style={{ listStyle: "none", padding: 0, marginTop: "8px" }}>
@@ -172,7 +172,7 @@ export default function Explanation() {
             相手とのやり取り回数
           </h2>
           <div style={{ display: "flex", gap: "48px", alignItems: "flex-start" }}>
-            <div style={{ flex: 1, fontSize: "1.05rem", lineHeight: "1.9" }}>
+            <div style={{ flex: 1, fontSize: "1.05rem", lineHeight: "1.9", textAlign:"left" }}>
               <p>相手ごとに、やり取り回数が異なります。</p>
               <ul style={{ listStyle: "none", padding: 0, marginTop: "8px" }}>
                 {[
@@ -211,7 +211,7 @@ export default function Explanation() {
           </h2>
           <div style={{ maxWidth: "640px", margin: "0 auto", fontSize: "1.05rem", lineHeight: "1.9" }}>
             <p>課題中および課題終了後に、いくつかの質問に回答していただきます。</p>
-            <p style={{ marginTop: "16px", marginBottom: "8px" }}>例：</p>
+            <p style={{ marginTop: "16px", marginBottom: "8px", textAlign:"left" }}>例：</p>
             <ul style={{ listStyle: "none", padding: 0 }}>
               {[
                 "相手は協力的に感じたか",
@@ -225,7 +225,7 @@ export default function Explanation() {
               ))}
             </ul>
             <p style={{ marginTop: "20px", color: "#555" }}>
-              正解・不正解はありません。その時点での率直な印象や考えを回答してください。
+              正解・不正解はありません。<br/>その時点での率直な印象や考えを回答してください。
             </p>
           </div>
         </section>
@@ -288,9 +288,9 @@ export default function Explanation() {
               </thead>
               <tbody>
                 {[
-                  ["14:00", "RM10402"],
-                  ["15:00", "RM20402"],
-                  ["16:00", "RM30402"],
+                  ["13:30", "RM10402"],
+                  ["14:30", "RM20402"],
+                  ["15:30", "RM30402"],
                 ].map(([time, code]) => (
                   <tr key={time}>
                     <td style={{ padding: "12px 20px", border: "1px solid #ddd", textAlign: "center" }}>{time}</td>
@@ -299,12 +299,12 @@ export default function Explanation() {
                 ))}
               </tbody>
             </table>
-            <ul style={{ listStyle: "none", padding: 0, marginTop: "24px" }}>
+            <ul style={{ listStyle: "none", padding: 0, marginTop: "24px", textAlign:"left" }}>
               {[
                 "各ルームは開始時刻から10分間開いています。",
                 "必ず指定された時間帯に参加してください。",
                 "時間帯に間に合わなかった場合は、次の時間帯までお待ちいただき、対応するルームコードを使用してください。",
-                "同じルームコードに参加した参加者同士でマッチングが行われる場合があります。",
+                "同じルームコードに参加した参加者同士でマッチングが行われます。",
               ].map((item) => (
                 <li key={item} style={{ display: "flex", gap: "12px", marginBottom: "8px" }}>
                   <span style={{ color: "#888", flexShrink: 0 }}>–</span>
@@ -359,17 +359,19 @@ export default function Explanation() {
               htmlFor="mail-input"
               style={{ display: "block", fontSize: "1.05rem", marginBottom: "10px" }}
             >
-              メールアドレスを入力してください（謝礼の振込に使用します）
+              Participant ID を入力してください（謝礼の振込に使用します）
             </label>
             <input
               id="mail-input"
-              type="email"
+              type="number"           
+              inputMode="numeric"     
+              pattern="[0-9]*"
               value={mailId}
               onChange={(e) => {
                 setMailId(e.target.value);
                 if (showMailError) setShowMailError(false);
               }}
-              placeholder="example@email.com"
+              placeholder="例：12345"
               style={{
               margin: "25px",
               color : "#4c4c4cff",
@@ -386,7 +388,7 @@ export default function Explanation() {
             />
             {showMailError && (
               <p style={{ color: "#c0392b", marginTop: "8px", fontSize: "0.95rem" }}>
-                ※ 有効なメールアドレスを入力してください。
+                ※ 有効な数字を入力してください。
               </p>
             )}
           </div>

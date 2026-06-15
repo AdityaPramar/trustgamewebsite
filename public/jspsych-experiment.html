@@ -1703,22 +1703,22 @@ localStorage.removeItem("participant_mail");
   
 });
 
-    const skipBtn = document.createElement("button");
+    //const skipBtn = document.createElement("button");
 
-    skipBtn.id = "debug-skip-btn";
-    skipBtn.textContent = "DEBUG: Skip to End";
+    //skipBtn.id = "debug-skip-btn";
+    //skipBtn.textContent = "DEBUG: Skip to End";
 
-    skipBtn.onclick = () => {
+    //skipBtn.onclick = () => {
 
-      if (!confirm("Jump directly to experiment end?")) {
-        return;
-      }
+    //  if (!confirm("Jump directly to experiment end?")) {
+    //    return;
+    //  }
 
-      jsPsych.endExperiment("DEBUG_SKIP");
+    //  jsPsych.endExperiment("DEBUG_SKIP");
 
-    };
+    //};
 
-    document.body.appendChild(skipBtn);
+    //document.body.appendChild(skipBtn);
 
     jsPsych.run(timeline);
   }

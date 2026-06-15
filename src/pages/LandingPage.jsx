@@ -3,24 +3,49 @@ import { useNavigate, useLocation } from "react-router-dom";
 //import { useEffect } from "react";
 import imagehome from '../assets/imagehome.png';
 {/*import Navbar from "../components/Navbar";*/}
-const VALID_CODES = ["RM10402", "RM20402", "RM30402"];
+const VALID_CODES = {
+  RM10402:      { start: [13, 30], end: [13, 45] },
+  RM20402:      { start: [14, 30], end: [14, 45] },
+  RM30402:      { start: [15, 30], end: [15, 45] },
+  DEBUGTESTER0402: null, 
+};
   "https://docs.google.com/presentation/d/e/2PACX-1vTej7qEIB-rTGX-hzSDlGWk3X8s8_t_fvffqAMDcatR5PDdEK6u4VGPuC_0nWaJOAexgI9PhoWPgYRgs/pub?start=false&loop=false&delayms=3000";
 
   
 export default function LandingPage() {
   const [code, setCode] = useState("");
-  const [error, setError] = useState(false);
+  const [errorType, setErrorType] = useState(null);
   const navigate = useNavigate();
 const location = useLocation();  // add this
 
 const isExplanationDone = !!location.state?.explanationDone;
   const handleStart = () => {
-        if (VALID_CODES.includes(code.trim().toUpperCase())) {
-      navigate(`/experiment?roomCode=${code.trim().toUpperCase()}`);
-    } else {
-      setError(true);
-    }
-  };
+  const upper = code.trim().toUpperCase();
+  if (!(upper in VALID_CODES)) {
+    setErrorType("invalid");
+  } else if (!isCodeValidNow(upper)) {
+    setErrorType("time");
+  } else {
+    setErrorType(null);
+    navigate(`/experiment?roomCode=${upper}`);
+  }
+};
+
+  function isCodeValidNow(code) {
+  const upper = code.trim().toUpperCase();
+  if (!(upper in VALID_CODES)) return false;          
+  if (VALID_CODES[upper] === null) return true;     
+
+  const now = new Date();
+  const jst = new Date(now.getTime() + (9 * 60 - now.getTimezoneOffset()) * 60000);
+  const h = jst.getUTCHours();
+  const m = jst.getUTCMinutes();
+  const total = h * 60 + m;
+
+  const [sh, sm] = VALID_CODES[upper].start;
+  const [eh, em] = VALID_CODES[upper].end;
+  return total >= sh * 60 + sm && total <= eh * 60 + em;
+}
 
   return (
     <div>
@@ -124,9 +149,9 @@ const isExplanationDone = !!location.state?.explanationDone;
   placeholder="例：RMXXXXX"
   value={code}
   onChange={(e) => {
-    setCode(e.target.value);
-    setError(false);
-  }}
+  setCode(e.target.value);
+  setErrorType(null);   
+}}
   onKeyDown={(e) => {
     if (e.key === "Enter") handleStart();
   }}
@@ -144,15 +169,10 @@ const isExplanationDone = !!location.state?.explanationDone;
   }}
 />
 
-        <div
-          style={{
-            color: "#e74c3c",
-            minHeight: "24px",
-          }}
-        >
-          {error &&
-            "コードが正しくありません。もう一度入力してください。"}
-        </div>
+        <div style={{ color: "#e74c3c", minHeight: "24px" }}>
+  {errorType === "invalid" && "コードが正しくありません。もう一度入力してください。"}
+  {errorType === "time"    && "このコードは現在の時間帯では使用できません。参加時間をご確認ください。"}
+</div>
 
         <button
   onClick={handleStart}
