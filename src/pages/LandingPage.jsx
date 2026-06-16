@@ -33,11 +33,13 @@ const isExplanationDone = !!location.state?.explanationDone;
 
   function isCodeValidNow(code) {
   const upper = code.trim().toUpperCase();
-  if (!(upper in VALID_CODES)) return false;          
-  if (VALID_CODES[upper] === null) return true;     
+  if (!(upper in VALID_CODES)) return false;
+  if (VALID_CODES[upper] === null) return true;
 
   const now = new Date();
-  const jst = new Date(now.getTime() + (9 * 60 - now.getTimezoneOffset()) * 60000);
+  // getTimezoneOffset() returns minutes behind UTC, so JST (UTC+9) gives -540
+  // Correct JST conversion: UTC + 9 hours
+  const jst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
   const h = jst.getUTCHours();
   const m = jst.getUTCMinutes();
   const total = h * 60 + m;
