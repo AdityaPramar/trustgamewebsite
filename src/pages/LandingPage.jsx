@@ -4,10 +4,10 @@ import { useNavigate, useLocation } from "react-router-dom";
 import imagehome from '../assets/imagehome.png';
 {/*import Navbar from "../components/Navbar";*/}
 const VALID_CODES = {
-  RM10402:      { start: [13, 30], end: [13, 45] },
-  RM20402:      { start: [14, 30], end: [14, 45] },
-  RM30402:      { start: [15, 30], end: [15, 45] },
-  DEBUGTESTER0402: null, 
+  RMK7X4P: { from: "2026-10-01", to: "2026-10-02" },   // Oct 1-2
+  RMT3N9W: { from: "2026-10-03", to: "2026-10-04" },   // Oct 3-4
+  RMH6B2Z: { from: "2026-10-05", to: "2026-10-09" },   // Oct 5-9
+  DEBUGTESTER0402: null,
 };
   "https://docs.google.com/presentation/d/e/2PACX-1vTej7qEIB-rTGX-hzSDlGWk3X8s8_t_fvffqAMDcatR5PDdEK6u4VGPuC_0nWaJOAexgI9PhoWPgYRgs/pub?start=false&loop=false&delayms=3000";
 
@@ -34,19 +34,23 @@ const isExplanationDone = !!location.state?.explanationDone;
   function isCodeValidNow(code) {
   const upper = code.trim().toUpperCase();
   if (!(upper in VALID_CODES)) return false;
-  if (VALID_CODES[upper] === null) return true;
 
-  const now = new Date();
-  // getTimezoneOffset() returns minutes behind UTC, so JST (UTC+9) gives -540
-  // Correct JST conversion: UTC + 9 hours
-  const jst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const h = jst.getUTCHours();
-  const m = jst.getUTCMinutes();
-  const total = h * 60 + m;
+  const rule = VALID_CODES[upper];
+  if (rule === null) return true;
 
-  const [sh, sm] = VALID_CODES[upper].start;
-  const [eh, em] = VALID_CODES[upper].end;
-  return total >= sh * 60 + sm && total <= eh * 60 + em;
+  // JST = UTC + 9h
+  const jst = new Date(Date.now() + 9 * 60 * 60 * 1000);
+  const today = jst.toISOString().slice(0, 10);   // "YYYY-MM-DD" in JST
+
+  if (today < rule.from || today > rule.to) return false;
+
+  // Optional time-of-day window: add start: [h, m], end: [h, m] to a code
+  if (rule.start && rule.end) {
+    const total = jst.getUTCHours() * 60 + jst.getUTCMinutes();
+    return total >= rule.start[0] * 60 + rule.start[1]
+        && total <= rule.end[0] * 60 + rule.end[1];
+  }
+  return true;
 }
 
   return (
@@ -173,7 +177,7 @@ const isExplanationDone = !!location.state?.explanationDone;
 
         <div style={{ color: "#e74c3c", minHeight: "24px" }}>
   {errorType === "invalid" && "コードが正しくありません。もう一度入力してください。"}
-  {errorType === "time"    && "このコードは現在の時間帯では使用できません。参加時間をご確認ください。"}
+  {errorType === "time" && "このコードは現在ご利用いただけません。参加可能な日程をご確認ください。"}
 </div>
 
         <button

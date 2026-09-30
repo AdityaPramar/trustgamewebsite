@@ -419,27 +419,6 @@ body {
     #debug-info .label {
       color: #aaa;
     }
-
-    /* デバッグ用スキップボタン */
-    #debug-skip-btn {
-      position: fixed;
-      bottom: 16px;
-      right: 16px;
-      z-index: 99999;
-      padding: 10px 18px;
-      font-size: 14px;
-      font-weight: bold;
-      background: #e74c3c;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    }
-
-    #debug-skip-btn:hover {
-      background: #c0392b;
-    }
   </style>
 
   <script src="https://unpkg.com/jspsych@7.3.4"></script>
@@ -460,7 +439,6 @@ body {
 
   <!-- ===== Debug UI ===== -->
   <div id="debug-info"></div>
-
 
 </body>
 <script type="module">
@@ -525,7 +503,7 @@ body {
     multiplier: 3,       // 投資倍率（投資額が相手に渡るとき3倍）
     endowment: 100,      // 毎ラウンドの持ち点
     invest_step: 1,      // 投資額刻み（1円単位）
-    invest_min: 30,      // 最低投資額
+    invest_min: 0,       // 最低投資額
     invest_max: 100,     // 投資額上限
     invest_timeout: null,  // 投資画面タイムアウト(ms) ※nullで無制限
     return_display_ms: 4000, // 返報表示時間(ms)
@@ -535,6 +513,26 @@ body {
     long_rounds_max: 12,
     donation_max: 1000,
     donation_step: 10,
+    match_fail_prob: 0.50, // 初回マッチング失敗確率
+  };
+
+  /* =========================================================
+     ゴーストラウンド設定
+     ・通常8ブロックの「3ブロック目・5ブロック目・7ブロック目」終了直後に挿入
+     ・相手が先に投資し、参加者がお返し額を決める（役割反転）
+     ・このラウンドのデータはFirebaseにもCSVにも保存しない
+  ========================================================= */
+  const GHOST_STRATEGIES = {
+    G1: { min: 80, max: 100 }, // 高投資
+    G2: { min: 40, max: 70 }, // 中投資
+    G3: { min: 0, max: 30 }, // 低投資
+  };
+  // ゴーストラウンドの長さも通常ブロックと同様に短期/長期をランダム割り当て
+  const GHOST_ROUND_PARAMS = {
+    short_min: 3,
+    short_max: 4,
+    long_min: 10,
+    long_max: 12,
   };
 
   /* =========================================================
@@ -608,7 +606,8 @@ body {
 
   // ゲームボードHTML生成
   function makeGameBoardHtml(opts) {
-    const { roundNum, oppIcon, oppName, content, oppBarsHtml, playerBarsHtml } = opts;
+    const { roundNum, oppIcon, oppName, content, oppBarsHtml, playerBarsHtml, midLabel } = opts;
+    const midText = midLabel || `ラウンド：${roundNum}回目`;
     return `
     <div class="game-board">
       <div class="gb-opponent">
@@ -616,7 +615,7 @@ body {
         <div><div class="gb-name">${oppName}</div><div class="gb-total">合計: <span id="opp-total">${GAME.opponentTotal}</span>円</div></div>
       </div>
       <div id="opp-bars">${oppBarsHtml || ""}</div>
-      <div class="gb-mid">ラウンド：${roundNum}回目</div>
+      <div class="gb-mid">${midText}</div>
       <div id="my-bars">${playerBarsHtml || ""}</div>
       <div class="gb-player">
         <div class="gb-avatar">${GAME.playerIcon}</div>
@@ -669,7 +668,7 @@ body {
   const AMOUNTS = Array.from(
     { length: (PARAMS.invest_max - PARAMS.invest_min) / PARAMS.invest_step + 1 },
     (_, i) => PARAMS.invest_min + i * PARAMS.invest_step
-  ); // [30, 31, 32, ..., 100]
+  ); // [0, 1, 2, ..., 100]
 
   /* =========================================================
      実験デザイン生成
@@ -720,6 +719,174 @@ body {
     const s_next = (1 - PARAMS.lambda) * s_prev + PARAMS.lambda * (g / 100 - PARAMS.theta);
 
     return { s_next, r, eta, y };
+  }
+
+  /* =========================================================
+     ゴーストラウンド構築
+     ・相手（Ghost）が先に投資額を決めて渡す
+     ・参加者はいくら返すかをスライダーで決定
+     ・通常ブロックと同様、短期(3〜4回)／長期(10〜12回)を
+       ランダムに割り当てた複数ラウンドのミニブロックとして構成する
+     ・このラウンドのtrial_kindは "ghost_*" で統一し、
+       Firebaseアップロード処理・CSV書き出しの両方で除外する
+     ・ゴースト役のアイコン／ハンドルネームは、通常ブロックの相手と同じ
+       プール（OPPONENT_ICONS / OPPONENT_NAMES）からランダムに選ぶ
+  ========================================================= */
+  function buildGhostRoundTimeline(ghostType, afterBlockNum) {
+    const strat = GHOST_STRATEGIES[ghostType];
+
+    // 通常の相手と同じプールからアイコン・名前をランダムに選ぶ
+    const ghostIcon = OPPONENT_ICONS[randInt(0, OPPONENT_ICONS.length - 1)].emoji;
+    const ghostName = OPPONENT_NAMES[randInt(0, OPPONENT_NAMES.length - 1)];
+
+    // 通常ブロックと同様、短期/長期をランダムに割り当てる
+    const ghostDuration = Math.random() < 0.5 ? "short" : "long";
+    const numGhostRounds = ghostDuration === "short"
+      ? randInt(GHOST_ROUND_PARAMS.short_min, GHOST_ROUND_PARAMS.short_max)
+      : randInt(GHOST_ROUND_PARAMS.long_min, GHOST_ROUND_PARAMS.long_max);
+    const ghostDurationLabel = ghostDuration === "short"
+      ? `短期（${GHOST_ROUND_PARAMS.short_min}〜${GHOST_ROUND_PARAMS.short_max}回）`
+      : `長期（${GHOST_ROUND_PARAMS.long_min}〜${GHOST_ROUND_PARAMS.long_max}回）`;
+
+    const ghostTimeline = [];
+
+    // イントロ（このゴーストラウンド全体で1回だけ表示）
+    ghostTimeline.push({
+      type: jsPsychHtmlButtonResponse,
+      stimulus: `
+        <div class="center mid">
+          <div style="font-size:56px;">${ghostIcon}</div>
+          <p><strong>ゴーストラウンド</strong></p>
+          <p>今回は相手が先に投資します。<br>あなたは相手にいくら返すかを決めてください。</p>
+          <p>この相手とのやり取り回数：<strong>${ghostDurationLabel}</strong></p>
+        </div>`,
+      choices: ["開始"],
+      data: {
+        phase: "ghost_round", trial_kind: "ghost_intro",
+        ghost_type: ghostType, after_block: afterBlockNum,
+        ghost_duration: ghostDuration, ghost_num_rounds: numGhostRounds,
+        ghost_icon: ghostIcon, ghost_name: ghostName
+      }
+    });
+
+    for (let r = 1; r <= numGhostRounds; r++) {
+      const roundNum = r; // クロージャ用
+      // 相手の投資は事前に決定（参加者の応答には依存しないため設計時に生成してよい）
+      const oppInvest = randInt(strat.min, strat.max);
+      const received = oppInvest * PARAMS.multiplier;
+      const midLabel = `ゴーストラウンド：${roundNum}/${numGhostRounds}回目`;
+
+      // 相手の投資を提示（自動送出）
+      ghostTimeline.push({
+        type: jsPsychHtmlKeyboardResponse,
+        stimulus: () => makeGameBoardHtml({
+          midLabel,
+          oppIcon: ghostIcon,
+          oppName: ghostName,
+          oppBarsHtml: makeBar("投資", oppInvest, PARAMS.endowment, "gold", "grow"),
+          playerBarsHtml: makeBar("受取", received, PARAMS.endowment, "green", "grow"),
+          content: `<div class="center mid" style="margin-top:12px;">
+            <p>相手の投資額：<strong>${oppInvest}円</strong> → あなたに <strong>${received}円</strong> が渡りました</p>
+          </div>`
+        }),
+        choices: "NO_KEYS",
+        trial_duration: 2500,
+        data: {
+          phase: "ghost_round", trial_kind: "ghost_reveal",
+          ghost_type: ghostType, after_block: afterBlockNum, ghost_round: roundNum,
+          opponent_investment: oppInvest, received_amount: received
+        }
+      });
+
+      // 参加者がお返し額を決定
+      ghostTimeline.push({
+        type: jsPsychHtmlSliderResponse,
+        stimulus: () => makeGameBoardHtml({
+          midLabel,
+          oppIcon: ghostIcon,
+          oppName: ghostName,
+          oppBarsHtml: makeBar("投資", oppInvest, PARAMS.endowment, "gold", ""),
+          playerBarsHtml: makeBar("受取", received, PARAMS.endowment, "green", ""),
+          content: `
+            <div class="center" style="margin-top:12px;">
+              <div id="ghost-return-preview" class="amount-preview">お返しする額：—円</div>
+              <div id="ghost-keep-preview" class="small">あなたの手元に残す額：—円</div>
+            </div>`
+        }),
+        min: 0,
+        max: received,
+        step: 1,
+        slider_start: Math.floor(received / 2),
+        labels: [String(0), "", String(Math.round(received / 2)), "", String(received)],
+        button_label: "確定",
+        require_movement: true,
+        data: {
+          phase: "ghost_round", trial_kind: "ghost_return_decision",
+          ghost_type: ghostType, after_block: afterBlockNum, ghost_round: roundNum,
+          opponent_investment: oppInvest, received_amount: received
+        },
+        on_load: () => {
+          const slider = document.querySelector("input[type='range']");
+          const retP = document.getElementById("ghost-return-preview");
+          const keepP = document.getElementById("ghost-keep-preview");
+          if (!slider) return;
+          slider.classList.add("slider-hidden-thumb");
+          const reveal = () => {
+            slider.classList.remove("slider-hidden-thumb");
+            const y = parseInt(slider.value);
+            retP.innerHTML = `お返しする額：<strong>${y}円</strong>`;
+            keepP.textContent = `あなたの手元に残す額：${received - y}円`;
+          };
+          slider.addEventListener("input", reveal);
+          slider.addEventListener("pointerdown", reveal);
+        },
+        on_finish: (data) => {
+          const y = parseInt(data.response);
+          data.return_amount = y;
+          data.player_keep = received - y;
+        }
+      });
+
+      // 結果表示
+      ghostTimeline.push({
+        type: jsPsychHtmlButtonResponse,
+        stimulus: () => {
+          const dec = jsPsych.data.get()
+            .filter({
+              trial_kind: "ghost_return_decision", ghost_type: ghostType,
+              after_block: afterBlockNum, ghost_round: roundNum
+            })
+            .last(1).values()[0];
+          const y = dec.return_amount;
+          return makeGameBoardHtml({
+            midLabel,
+            oppIcon: ghostIcon,
+            oppName: ghostName,
+            oppBarsHtml: makeBar("受取", y, PARAMS.endowment, "green", "grow"),
+            playerBarsHtml: makeBar("手元", received - y, PARAMS.endowment, "gold", ""),
+            content: `<div class="center mid" style="margin-top:12px;">
+              <p>あなたが返した額：<strong>${y}円</strong></p>
+              <p>あなたの手元に残った額：<strong>${received - y}円</strong></p>
+            </div>`
+          });
+        },
+        choices: ["次へ"],
+        data: {
+          phase: "ghost_round", trial_kind: "ghost_result",
+          ghost_type: ghostType, after_block: afterBlockNum, ghost_round: roundNum
+        }
+      });
+
+      // ラウンド間のISI（最終ラウンド後は不要）
+      if (roundNum < numGhostRounds) {
+        ghostTimeline.push(makeFixationISI({
+          phase: "ghost_round", ghost_type: ghostType,
+          after_block: afterBlockNum, ghost_round: roundNum
+        }));
+      }
+    }
+
+    return { timeline: ghostTimeline };
   }
 
   /* =========================================================
@@ -814,14 +981,26 @@ body {
     <p>課題の途中で、相手の印象や今後の予想について質問が表示されます。
     あまり深く考えすぎず、<strong>その時その瞬間の直感</strong>で回答してください。</p>
   `),
+  instructionPage(`
+  <p><strong>【もう一つのタイプのラウンドについて】</strong></p>
+  <p>課題の途中で、これまでとは<strong>役割が逆</strong>のラウンドが
+  何回か行われます。</p>
+  <p>このラウンドでは、<strong>相手が先にあなたへ投資</strong>します。
+  投資された額は3倍になってあなたに渡ります。</p>
+  <p>あなたは、受け取った額のうち<strong>相手にいくら返すか</strong>を
+  スライダーで決めてください。残りはあなたの手元に残ります。</p>
+`),
       instructionPage(`
-    <p><strong>【重要：追加報酬について】</strong></p>
-    <p>課題終了後に、コンピュータが各相手（計8ブロック）とのやり取りの中から、
-    それぞれ2試行ずつをランダムに抽選します。
-    その8試行分の平均に基づき追加報酬が支払われます。</p>
-    <p>追加謝礼（ボーナス）の上限は2000円です。</p>
-    <p>ブロック内の「どの回のやり取り」が選ばれるかは、課題が終わるまで分かりません。
-    そのため、すべての試行を「実際に支払われる可能性がある」と考えて取り組んでください。</p>
+  <p><strong>【重要：報酬について】</strong></p>
+  <p>課題終了後に、コンピュータが<strong>あなたがやり取りした各相手ごとに、2試行ずつ</strong>
+  ランダムに選びます。</p>
+  <p>選ばれた試行での獲得額（手元に残した額＋相手から返ってきた額）が、
+  <strong>基本報酬に上乗せして</strong>支払われます。</p>
+  <p><strong>報酬の対象となるのは、あなたが送り手（先に投資する側）となるラウンドのみです。</strong></p>
+  <p>どの試行が選ばれるかは、課題が終わるまで分かりません。
+  どの相手とのやり取りも選ばれる可能性があるため、
+  <strong>これまでの相手とのやり取りの一回一回が報酬に影響する</strong>ものと考えて、
+  慎重に判断してください。</p>
   `),
       instructionPage(`
     <p><strong>【準備はよろしいですか？】</strong></p>
@@ -1095,6 +1274,17 @@ body {
   });
 
   /* =========================================================
+     ゴーストラウンドの挿入位置とタイプの割り当て
+     ・G1/G2/G3 をランダムな順序で、3・5・7ブロック目の直後に割り当てる
+  ========================================================= */
+  const ghostTypeOrder = shuffle(["G1", "G2", "G3"]);
+  const GHOST_INSERT_AFTER = {
+    3: ghostTypeOrder[0],
+    5: ghostTypeOrder[1],
+    7: ghostTypeOrder[2],
+  };
+
+  /* =========================================================
  Practice Block
 ========================================================= */
 
@@ -1118,8 +1308,11 @@ body {
     // 評判ストック（ラグ付き: s_0 = 0）
     let s = 0;
 
-    // --- フェイクマッチング＋ブロック開始（ネスト） ---
-    timeline.push({
+    // --- マッチング（失敗→再試行ループ付き）＋ブロック開始（ネスト） ---
+    let matchAttemptNumber = 0;
+    let matchAttemptFailed = false;
+
+    const matchingLoopNode = {
       timeline: [
         {
           type: jsPsychHtmlKeyboardResponse,
@@ -1131,9 +1324,42 @@ body {
           <div class="small" style="margin-top:12px;">通常は15秒前後でマッチングします。</div>
         </div>`,
           choices: "NO_KEYS",
-          trial_duration: randInt(5000, 10000),
-          data: { phase: "matching", condition: condLabel, block_index: blockIdx + 1 }
+          trial_duration: () => randInt(5000, 10000),
+          data: {
+            phase: "matching", trial_kind: "matching_spinner",
+            condition: condLabel, block_index: blockIdx + 1
+          },
+          on_finish: () => {
+            matchAttemptNumber++;
+            // 初回のみ、一定確率でマッチング失敗（再試行は必ず成功）
+            matchAttemptFailed = (matchAttemptNumber === 1) && (Math.random() < PARAMS.match_fail_prob);
+          }
         },
+        {
+          timeline: [
+            {
+              type: jsPsychHtmlButtonResponse,
+              stimulus: `
+              <div class="center mid">
+                <p>お相手が見つかりませんでした。</p>
+                <p class="small">もう一度お試しください。</p>
+              </div>`,
+              choices: ["再試行"],
+              data: {
+                phase: "matching", trial_kind: "matching_failed",
+                condition: condLabel, block_index: blockIdx + 1
+              }
+            }
+          ],
+          conditional_function: () => matchAttemptFailed
+        }
+      ],
+      loop_function: () => matchAttemptFailed
+    };
+
+    timeline.push({
+      timeline: [
+        matchingLoopNode,
         {
           type: jsPsychHtmlKeyboardResponse,
           stimulus: `<div class="center mid">マッチングが完了しました。</div>`,
@@ -1298,7 +1524,7 @@ body {
           });
         },
         choices: "NO_KEYS",
-        trial_duration: randInt(2000, 4000),
+        trial_duration: randInt(6000, 12000),
         data: {
           phase: "trust_game", trial_kind: "contemplation",
           condition: condLabel, round: roundNum
@@ -1386,7 +1612,6 @@ body {
         phase: "trust_game", condition: condLabel, round: roundNum
       }));
     }
-    timeline.push({ timeline: roundsTimeline });
 
     // --- ブロック終了時質問（7項目、7段階ボタン、順序ランダマイズ） ---
     const blockEndQuestions = [
@@ -1422,7 +1647,15 @@ body {
         on_finish: (data) => { data.response_value = data.response + 1; }
       });
     });
-    timeline.push({ timeline: blockEndTimeline });
+
+    // ラウンド本編とブロック終了時質問を1つのネストタイムラインにまとめる。
+    timeline.push({ timeline: [...roundsTimeline, ...blockEndTimeline] });
+
+    // --- ゴーストラウンド挿入（3・5・7ブロック目の直後） ---
+    const blockNumber = blockIdx + 1;
+    if (GHOST_INSERT_AFTER[blockNumber]) {
+      timeline.push(buildGhostRoundTimeline(GHOST_INSERT_AFTER[blockNumber], blockNumber));
+    }
   });
 
   /* =========================================================
@@ -1558,6 +1791,24 @@ body {
     choices: ["終了"],
     data: { phase: "end", trial_kind: "end_screen" }
   });
+
+  // 各相手（ブロック）から2試行をランダムに選び、獲得額を合計する
+// ゴースト・練習は trial_kind が "invest" ではないため対象外
+function computeBonus(allData) {
+  const inv = allData.filter(t => t.trial_kind === "invest");
+  const byBlock = {};
+  inv.forEach(t => { (byBlock[t.block_index] ??= []).push(t); });
+
+  let bonus = 0;
+  const selected = [];
+  Object.entries(byBlock).forEach(([blockIdx, rounds]) => {
+    shuffle(rounds).slice(0, 2).forEach(t => {
+      bonus += t.earnings;
+      selected.push({ block_index: Number(blockIdx), round: t.round, earnings: t.earnings });
+    });
+  });
+  return { bonus, selected };
+}
   
 async function uploadExperimentData() {
   const allData = jsPsych.data.get().values();
@@ -1566,11 +1817,12 @@ async function uploadExperimentData() {
   const add = window.firebaseAddDoc;
   const pid = PARTICIPANT_ID;
   const rc = ROOM_CODE;
-
-  // ── Sanitize: replace undefined with null ──────────────
+  const { bonus, selected } = computeBonus(allData);
+  window.__BONUS = bonus;   // available for the end screen if you want it
+  // ── Sanitize: replace undefined with null, tag every record as trial data ──
   function sanitize(obj) {
     return Object.fromEntries(
-      Object.entries(obj).map(([k, v]) => [k, v === undefined ? null : v])
+      Object.entries({ ...obj, trial: 1 }).map(([k, v]) => [k, v === undefined ? null : v])
     );
   }
 
@@ -1586,10 +1838,14 @@ async function uploadExperimentData() {
   player_icon: GAME.playerIcon,
   player_total: GAME.playerTotal,
   donation_anonymity: allData.find(t => t.trial_kind === "donation_choice")?.anonymity ?? null,
+  game_bonus: bonus,                                   // NEW
+  selected_trials: JSON.stringify(selected),           // NEW: audit trail
 })));
 localStorage.removeItem("participant_mail");
 
   // ── 2. Investment trials ─────────────────────────────────
+  // 注意：ゴーストラウンド（trial_kind: "ghost_*"）はここでは参照していないため、
+  // 意図的にFirebaseへはアップロードされない。
   allData.filter(t => t.trial_kind === "invest").forEach(t => {
     promises.push(add(col(db, "invest_trials"), sanitize({
       participant_id: pid, room_code: rc,
@@ -1683,8 +1939,9 @@ localStorage.removeItem("participant_mail");
       alert("Upload failed: " + err.message);
     }
 
-    // CSV download stays exactly as before
-    const csv = jsPsych.data.get().csv();
+    // CSV書き出し：ゴーストラウンド（phase === "ghost_round"）はここでも除外する
+    const csvData = jsPsych.data.get().filterCustom((t) => t.phase !== "ghost_round");
+    const csv = csvData.csv();
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -1702,23 +1959,6 @@ localStorage.removeItem("participant_mail");
   }
   
 });
-
-    //const skipBtn = document.createElement("button");
-
-    //skipBtn.id = "debug-skip-btn";
-    //skipBtn.textContent = "DEBUG: Skip to End";
-
-    //skipBtn.onclick = () => {
-
-    //  if (!confirm("Jump directly to experiment end?")) {
-    //    return;
-    //  }
-
-    //  jsPsych.endExperiment("DEBUG_SKIP");
-
-    //};
-
-    //document.body.appendChild(skipBtn);
 
     jsPsych.run(timeline);
   }
