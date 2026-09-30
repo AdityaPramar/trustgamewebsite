@@ -148,7 +148,7 @@ const isExplanationDone = !!location.state?.explanationDone;
         >
           参加コードを入力してください
         </h2>
-        <p>参加コードは説明資料の最後のスライドをご確認ください。</p>
+        <p>参加コードは、ご予約後にお送りした確認メールをご確認ください。</p>
 
         <input
   type="text"
