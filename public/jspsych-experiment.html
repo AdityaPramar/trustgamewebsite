@@ -756,7 +756,7 @@ body {
       stimulus: `
         <div class="center mid">
           <div style="font-size:56px;">${ghostIcon}</div>
-          <p><strong>ゴーストラウンド</strong></p>
+          <p><strong>インバースラウンド</strong></p>
           <p>今回は相手が先に投資します。<br>あなたは相手にいくら返すかを決めてください。</p>
           <p>この相手とのやり取り回数：<strong>${ghostDurationLabel}</strong></p>
         </div>`,
@@ -774,7 +774,7 @@ body {
       // 相手の投資は事前に決定（参加者の応答には依存しないため設計時に生成してよい）
       const oppInvest = randInt(strat.min, strat.max);
       const received = oppInvest * PARAMS.multiplier;
-      const midLabel = `ゴーストラウンド：${roundNum}/${numGhostRounds}回目`;
+      const midLabel = `インバースラウンド：${roundNum}/${numGhostRounds}回目`;
 
       // 相手の投資を提示（自動送出）
       ghostTimeline.push({
